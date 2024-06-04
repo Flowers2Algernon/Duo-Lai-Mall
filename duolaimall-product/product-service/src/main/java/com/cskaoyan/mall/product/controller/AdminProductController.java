@@ -59,7 +59,8 @@ public class AdminProductController {
 // 平台属性值回显
     @GetMapping("/admin/product/getAttrValueList/{attrId}")
     public Result<List<PlatformAttributeValueDTO>> getAttrInfoDTO(@PathVariable Long attrId) {
-        return null;
+        List<PlatformAttributeValueDTO> platformAttrInfo = platformAttributeService.getPlatformAttrInfo(attrId);
+        return Result.ok(platformAttrInfo);
     }
 
 }

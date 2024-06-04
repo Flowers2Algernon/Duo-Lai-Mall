@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-06-04T16:24:12+0800",
+    date = "2024-06-04T20:09:27+0800",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 17.0.9 (Oracle Corporation)"
 )
 @Component
@@ -29,7 +29,7 @@ public class PlatformAttributeInfoConverterImpl implements PlatformAttributeInfo
         platformAttributeInfoDTO.setAttrName( platformAttributeInfo.getAttrName() );
         platformAttributeInfoDTO.setCategoryId( platformAttributeInfo.getCategoryId() );
         platformAttributeInfoDTO.setCategoryLevel( platformAttributeInfo.getCategoryLevel() );
-        platformAttributeInfoDTO.setAttrValueList( platformAttributeValueListToPlatformAttributeValueDTOList( platformAttributeInfo.getAttrValueList() ) );
+        platformAttributeInfoDTO.setAttrValueList( platformAttributeValuePO2DTOs( platformAttributeInfo.getAttrValueList() ) );
 
         return platformAttributeInfoDTO;
     }
@@ -63,16 +63,17 @@ public class PlatformAttributeInfoConverterImpl implements PlatformAttributeInfo
         return platformAttributeValueDTO;
     }
 
-    protected List<PlatformAttributeValueDTO> platformAttributeValueListToPlatformAttributeValueDTOList(List<PlatformAttributeValue> list) {
-        if ( list == null ) {
+    @Override
+    public List<PlatformAttributeValueDTO> platformAttributeValuePO2DTOs(List<PlatformAttributeValue> platformAttributeValues) {
+        if ( platformAttributeValues == null ) {
             return null;
         }
 
-        List<PlatformAttributeValueDTO> list1 = new ArrayList<PlatformAttributeValueDTO>( list.size() );
-        for ( PlatformAttributeValue platformAttributeValue : list ) {
-            list1.add( platformAttributeValuePO2DTO( platformAttributeValue ) );
+        List<PlatformAttributeValueDTO> list = new ArrayList<PlatformAttributeValueDTO>( platformAttributeValues.size() );
+        for ( PlatformAttributeValue platformAttributeValue : platformAttributeValues ) {
+            list.add( platformAttributeValuePO2DTO( platformAttributeValue ) );
         }
 
-        return list1;
+        return list;
     }
 }
