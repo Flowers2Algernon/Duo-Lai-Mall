@@ -1,0 +1,13 @@
+com\cskaoyan\mall\product\dto\SkuPlatformAttributeValueDTO.class
+com\cskaoyan\mall\product\dto\SkuImageDTO.class
+com\cskaoyan\mall\product\dto\SpuPosterDTO.class
+com\cskaoyan\mall\product\dto\TrademarkDTO.class
+com\cskaoyan\mall\product\dto\SpuSaleAttributeValueDTO.class
+com\cskaoyan\mall\product\dto\PlatformAttributeInfoDTO.class
+com\cskaoyan\mall\product\dto\SpuSaleAttributeInfoDTO.class
+com\cskaoyan\mall\product\dto\SkuSaleAttributeValueDTO.class
+com\cskaoyan\mall\product\dto\SkuSpecification.class
+com\cskaoyan\mall\product\dto\CategoryHierarchyDTO.class
+com\cskaoyan\mall\product\dto\PlatformAttributeValueDTO.class
+com\cskaoyan\mall\product\dto\SkuInfoDTO.class
+com\cskaoyan\mall\product\dto\ProductDetailDTO.class

@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: server-gateway
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.192.129:8848
+      config:
+        server-addr: 192.168.192.129:8848
+        file-extension: yaml
+  config:
+    import:
+      - nacos:${spring.application.name}-${spring.profiles.active}.yaml
+      - nacos:common.yaml
+logging:
+  level:
+    org.springframework.cloud.gateway: debug

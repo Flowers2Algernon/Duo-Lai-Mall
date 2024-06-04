@@ -1,0 +1,2 @@
+com\cskaoyan\mall\common\constant\RedisConst.class
+com\cskaoyan\mall\common\handler\GlobalExceptionHandler.class
