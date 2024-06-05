@@ -5,6 +5,7 @@ import com.cskaoyan.mall.common.result.Result;
 import com.cskaoyan.mall.product.dto.*;
 import com.cskaoyan.mall.product.model.FirstLevelCategory;
 import com.cskaoyan.mall.product.model.Trademark;
+import com.cskaoyan.mall.product.query.CategoryTrademarkParam;
 import com.cskaoyan.mall.product.query.PlatformAttributeParam;
 import com.cskaoyan.mall.product.query.TrademarkParam;
 import com.cskaoyan.mall.product.service.CategoryService;
@@ -111,5 +112,30 @@ public class AdminProductController {
         trademarkService.updateById(trademarkParam);
         return Result.ok();
     }
+    //添加商品类名品牌
+    @PostMapping("admin/product/baseCategoryTrademark/save")
+    public Result save(@RequestBody CategoryTrademarkParam categoryTrademarkVo){
+        categoryService.save(categoryTrademarkVo);
+        return Result.ok();
+    }
+
+    @GetMapping("admin/product/baseCategoryTrademark/findTrademarkList/{thirdLevelCategoryId}")
+    public Result findTrademarkList(@PathVariable Long thirdLevelCategoryId){
+        List<TrademarkDTO> trademarkList = categoryService.findTrademarkList(thirdLevelCategoryId);
+        return Result.ok(trademarkList);
+    }
+    //查询未关联商品类目的品牌
+    @GetMapping("admin/product/baseCategoryTrademark/findCurrentTrademarkList/{thirdLevelCategoryId}")
+    public Result<List<TrademarkDTO> > findCurrentTrademarkList(@PathVariable Long thirdLevelCategoryId){
+        List<TrademarkDTO> unLinkedTrademarkList = categoryService.findUnLinkedTrademarkList(thirdLevelCategoryId);
+        return Result.ok(unLinkedTrademarkList);
+    }
+    //删除品牌目录关联
+    @DeleteMapping("admin/product/baseCategoryTrademark/remove/{thirdLevelCategoryId}/{trademarkId}")
+    public Result remove(@PathVariable Long thirdLevelCategoryId, @PathVariable Long trademarkId){
+        categoryService.remove(thirdLevelCategoryId,trademarkId);
+        return Result.ok();
+    }
+
 
 }
