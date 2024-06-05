@@ -4,13 +4,14 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cskaoyan.mall.common.result.Result;
 import com.cskaoyan.mall.product.dto.*;
 import com.cskaoyan.mall.product.model.FirstLevelCategory;
+import com.cskaoyan.mall.product.model.SpuInfo;
 import com.cskaoyan.mall.product.model.Trademark;
 import com.cskaoyan.mall.product.query.CategoryTrademarkParam;
 import com.cskaoyan.mall.product.query.PlatformAttributeParam;
+import com.cskaoyan.mall.product.query.SpuInfoParam;
 import com.cskaoyan.mall.product.query.TrademarkParam;
-import com.cskaoyan.mall.product.service.CategoryService;
-import com.cskaoyan.mall.product.service.PlatformAttributeService;
-import com.cskaoyan.mall.product.service.TrademarkService;
+import com.cskaoyan.mall.product.service.*;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +25,10 @@ public class AdminProductController {
     PlatformAttributeService platformAttributeService;
     @Autowired
     TrademarkService trademarkService;
+    @Autowired
+    SalesAttributeService salesAttributeService;
+    @Autowired
+    SpuService spuService;
 
     @GetMapping("admin/product/getCategory1")
     public Result<List<FirstLevelCategoryDTO>> getCategory1(){
@@ -136,6 +141,24 @@ public class AdminProductController {
         categoryService.remove(thirdLevelCategoryId,trademarkId);
         return Result.ok();
     }
-
+    @GetMapping("admin/product/baseSaleAttrList")
+    public Result<List<SaleAttributeInfoDTO>> SaleAttrList(){
+        List<SaleAttributeInfoDTO> saleAttrInfoList = salesAttributeService.getSaleAttrInfoList();
+        return Result.ok(saleAttrInfoList);
+    }
+    //spu列表的查询
+    @GetMapping("admin/product/{page}/{size}")
+    public Result<SpuInfoPageDTO> getSpuInfoPage(@PathVariable Long page,
+                                 @PathVariable Long size,
+                                 Long category3Id){
+        Page<SpuInfo> spuInfoPage = new Page<>(page,size);
+        SpuInfoPageDTO infoPage = spuService.getSpuInfoPage(spuInfoPage, category3Id);
+        return Result.ok(infoPage);
+    }
+    @PostMapping("admin/product/saveSpuInfo")
+    public Result saveSpuInfo(@RequestBody SpuInfoParam spuInfoParam){
+        spuService.saveSpuInfo(spuInfoParam);
+        return Result.ok();
+    }
 
 }

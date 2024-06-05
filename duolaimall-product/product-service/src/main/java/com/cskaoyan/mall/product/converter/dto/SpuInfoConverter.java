@@ -10,6 +10,7 @@ import java.util.List;
 public interface SpuInfoConverter {
 
     SpuInfoDTO spuInfoPO2DTO(SpuInfo spuInfo);
+    List<SpuInfoDTO> spuInfoPO2DTOs(List<SpuInfo> spuInfos);
 
     SpuSaleAttributeInfoDTO spuSaleAttributeInfoPO2DTO(SpuSaleAttributeInfo spuSaleAttributeInfo);
     List<SpuSaleAttributeInfoDTO> spuSaleAttributeInfoPOs2DTOs(List<SpuSaleAttributeInfo> spuSaleAttributeInfos);
