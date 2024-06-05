@@ -98,12 +98,28 @@ public class SpuServiceImpl implements SpuService {
 
     @Override
     public List<SpuImageDTO> getSpuImageList(Long spuId) {
-        return List.of();
+        QueryWrapper<SpuImage> wrapper = new QueryWrapper<>();
+        wrapper.eq("spu_id",spuId);
+        List<SpuImage> spuImages = spuImageMapper.selectList(wrapper);
+        List<SpuImageDTO> spuImageDTOS = spuInfoConverter.spuImagePOs2DTOs(spuImages);
+        return spuImageDTOS;
     }
 
     @Override
     public List<SpuSaleAttributeInfoDTO> getSpuSaleAttrList(Long spuId) {
-        return List.of();
+        //两张表查询
+        //spu_sale_attr_info和spu_sale_attr_value
+        QueryWrapper<SpuSaleAttributeInfo> infoQueryWrapper = new QueryWrapper<>();
+        infoQueryWrapper.eq("spu_id",spuId);
+        List<SpuSaleAttributeInfo> spuSaleAttributeInfos = spuSaleAttrInfoMapper.selectList(infoQueryWrapper);
+        for (SpuSaleAttributeInfo spuSaleAttributeInfo : spuSaleAttributeInfos) {
+            QueryWrapper<SpuSaleAttributeValue> valueQueryWrapper = new QueryWrapper<>();
+            valueQueryWrapper.eq("spu_id",spuId).eq("spu_sale_attr_id",spuSaleAttributeInfo.getId());
+            List<SpuSaleAttributeValue> spuSaleAttributeValues = spuSaleAttrValueMapper.selectList(valueQueryWrapper);
+            spuSaleAttributeInfo.setSpuSaleAttrValueList(spuSaleAttributeValues);
+        }
+        List<SpuSaleAttributeInfoDTO> spuSaleAttributeInfoDTOS = spuInfoConverter.spuSaleAttributeInfoPOs2DTOs(spuSaleAttributeInfos);
+        return spuSaleAttributeInfoDTOS;
     }
 
     @Override

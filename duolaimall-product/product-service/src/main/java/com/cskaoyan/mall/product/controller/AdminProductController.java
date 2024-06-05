@@ -4,12 +4,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cskaoyan.mall.common.result.Result;
 import com.cskaoyan.mall.product.dto.*;
 import com.cskaoyan.mall.product.model.FirstLevelCategory;
+import com.cskaoyan.mall.product.model.SkuInfo;
 import com.cskaoyan.mall.product.model.SpuInfo;
 import com.cskaoyan.mall.product.model.Trademark;
-import com.cskaoyan.mall.product.query.CategoryTrademarkParam;
-import com.cskaoyan.mall.product.query.PlatformAttributeParam;
-import com.cskaoyan.mall.product.query.SpuInfoParam;
-import com.cskaoyan.mall.product.query.TrademarkParam;
+import com.cskaoyan.mall.product.query.*;
 import com.cskaoyan.mall.product.service.*;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +27,8 @@ public class AdminProductController {
     SalesAttributeService salesAttributeService;
     @Autowired
     SpuService spuService;
+    @Autowired
+    SkuService skuService;
 
     @GetMapping("admin/product/getCategory1")
     public Result<List<FirstLevelCategoryDTO>> getCategory1(){
@@ -158,6 +158,43 @@ public class AdminProductController {
     @PostMapping("admin/product/saveSpuInfo")
     public Result saveSpuInfo(@RequestBody SpuInfoParam spuInfoParam){
         spuService.saveSpuInfo(spuInfoParam);
+        return Result.ok();
+    }
+    //商品图片的回显
+    @GetMapping("admin/product/spuImageList/{spuId}")
+    public Result<List<SpuImageDTO>> getSpuImageList(@PathVariable("spuId") Long spuId) {
+        List<SpuImageDTO> spuImageList = spuService.getSpuImageList(spuId);
+        return Result.ok(spuImageList);
+    }
+    @GetMapping("admin/product/spuSaleAttrList/{spuId}")
+    public Result<List<SpuSaleAttributeInfoDTO>> getSpuSaleAttrList(@PathVariable("spuId") Long spuId) {
+        List<SpuSaleAttributeInfoDTO> spuSaleAttrList = spuService.getSpuSaleAttrList(spuId);
+        return Result.ok(spuSaleAttrList);
+    }
+
+    @PostMapping("admin/product/saveSkuInfo")
+    public Result saveSkuInfo(@RequestBody SkuInfoParam skuInfo) {
+        skuService.saveSkuInfo(skuInfo);
+        return Result.ok();
+    }
+    @GetMapping("admin/product/list/{page}/{limit}")
+    public Result<SkuInfoPageDTO> index(
+            @PathVariable Long page,
+            @PathVariable Long limit) {
+        Page<SkuInfo> skuInfoPage = new Page<>();
+        SkuInfoPageDTO skuServicePage = skuService.getPage(skuInfoPage);
+        return Result.ok(skuServicePage);
+    }
+    //商品上架
+    @GetMapping("admin/product/onSale/{skuId}")
+    public Result onSale(@PathVariable("skuId") Long skuId) {
+        skuService.onSale(skuId);
+        return Result.ok();
+    }
+    //商品下架
+    @GetMapping("admin/product/cancelSale/{skuId}")
+    public Result cancelSale(@PathVariable("skuId") Long skuId) {
+        skuService.offSale(skuId);
         return Result.ok();
     }
 
