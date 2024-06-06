@@ -30,6 +30,7 @@ public class AdminProductController {
     @Autowired
     SkuService skuService;
 
+
     @GetMapping("admin/product/getCategory1")
     public Result<List<FirstLevelCategoryDTO>> getCategory1(){
         List<FirstLevelCategoryDTO> firstLevelCategory = categoryService.getFirstLevelCategory();

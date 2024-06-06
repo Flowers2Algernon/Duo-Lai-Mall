@@ -68,6 +68,8 @@ public class SkuServiceImpl implements SkuService {
 //            skuImage.setImgUrl(skuImageParam.getImgUrl());
 //            skuImage.setIsDefault(skuImageParam.getIsDefault());
             SkuImage skuImage = skuInfoConverter.skuImageP20P(skuImageParam);
+            skuImage.setImgUrl(skuImageParam.getImgUrl());
+            skuImage.setImgName(skuImageParam.getImgName());
             skuImage.setSkuId(skuInfoId);
             skuImageMapper.insert(skuImage);
         }
@@ -86,6 +88,8 @@ public class SkuServiceImpl implements SkuService {
         for (SkuSaleAttributeValueParam skuSaleAttributeValueParam : skuSaleAttrValueList) {
             SkuSaleAttributeValue skuSaleAttributeValue = skuInfoConverter.skuSaleAttributeValueP2O(skuSaleAttributeValueParam);
             skuSaleAttributeValue.setSkuId(skuInfoId);
+            skuSaleAttributeValue.setSpuId(skuInfo.getSpuId());
+            skuSaleAttributeValue.setSpuSaleAttrValueId(skuSaleAttributeValueParam.getSaleAttrValueId());
             skuSaleAttrValueMapper.insert(skuSaleAttributeValue);
         }
 
