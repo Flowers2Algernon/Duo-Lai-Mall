@@ -8,4 +8,4 @@ This is a modern shopping website I undergoing in duolaimall.
 
 
 
-![商品详情页加载2](C:\Users\Jinhong\Pictures\项目3图片\商品详情页加载2.gif)
+![商品详情页加载2](C:\Users\Jinhong\Desktop\项目3\duo-lai-mall\assets\商品详情页加载2.gif)
