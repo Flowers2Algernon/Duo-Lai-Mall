@@ -11,12 +11,17 @@ import com.cskaoyan.mall.product.query.CategoryTrademarkParam;
 import com.cskaoyan.mall.product.service.CategoryService;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Indexed;
 import org.springframework.stereotype.Service;
 
 import java.sql.Wrapper;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+
 @Service
 public class CategoryServiceImpl implements CategoryService {
     @Autowired
@@ -35,6 +40,9 @@ public class CategoryServiceImpl implements CategoryService {
     TrademarkMapper trademarkMapper;
     @Autowired
     TrademarkConverter trademarkConverter;
+    @Qualifier("categoryHierarchyMapper")
+    @Autowired
+    private CategoryHierarchyMapper categoryHierarchyMapper;
 
     @Override
     public List<FirstLevelCategoryDTO> getFirstLevelCategory() {
@@ -137,6 +145,49 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<FirstLevelCategoryNodeDTO> getCategoryTreeList() {
-        return List.of();
+        ArrayList<FirstLevelCategoryNodeDTO> firstLevelCategoryNodeDTOS = new ArrayList<>();
+        List<CategoryHierarchy> categoryHierarchies = categoryHierarchyMapper.selectCategoryHierarchy(null);
+        Map<Long, List<CategoryHierarchy>> firstLevelCategoryMap = categoryHierarchies.stream().collect(Collectors.groupingBy(CategoryHierarchy::getFirstLevelCategoryId));
+        //获取一级分类下的所有数据
+        for (Map.Entry<Long, List<CategoryHierarchy>> firstLevelEntry : firstLevelCategoryMap.entrySet()) {
+            //获取一级分类id
+            Long firstLevelEntryKey = firstLevelEntry.getKey();
+            //获取一级分类下方的所有分类
+            List<CategoryHierarchy> firstLevelEntryValue = firstLevelEntry.getValue();
+            FirstLevelCategoryNodeDTO firstLevelCategoryNodeDTO = new FirstLevelCategoryNodeDTO();
+            firstLevelCategoryNodeDTO.setCategoryId(firstLevelEntryKey);
+            firstLevelCategoryNodeDTO.setCategoryName(firstLevelEntryValue.get(0).getFirstLevelCategoryName());
+            List<SecondLevelCategoryNodeDTO> secondLevelCategoryNodes = buildSecondLevelCategoryNodeDTO(firstLevelEntryValue);
+            firstLevelCategoryNodeDTO.setCategoryChild(secondLevelCategoryNodes);
+            firstLevelCategoryNodeDTOS.add(firstLevelCategoryNodeDTO);
+        }
+        return firstLevelCategoryNodeDTOS;
+    }
+
+    private List<SecondLevelCategoryNodeDTO> buildSecondLevelCategoryNodeDTO(List<CategoryHierarchy> firstLevelEntryValue) {
+        ArrayList<SecondLevelCategoryNodeDTO> secondLevelCategoryNodeDTOS = new ArrayList<>();
+        //循环获取二级分类数据
+        Map<Long, List<CategoryHierarchy>> firstLevelCategoryChildMap = firstLevelEntryValue.stream().collect(Collectors.groupingBy(CategoryHierarchy::getSecondLevelCategoryId));
+        for (Map.Entry<Long, List<CategoryHierarchy>> secondLevelEntry : firstLevelCategoryChildMap.entrySet()) {
+            Long secondLevelCategoryId = secondLevelEntry.getKey();
+            List<CategoryHierarchy> secondLevelCategories = secondLevelEntry.getValue();
+            SecondLevelCategoryNodeDTO secondLevelCategoryNodeDTO = new SecondLevelCategoryNodeDTO();
+            secondLevelCategoryNodeDTO.setCategoryId(secondLevelCategoryId);
+            secondLevelCategoryNodeDTO.setCategoryName(secondLevelCategories.get(0).getSecondLevelCategoryName());
+            List<ThirdLevelCategoryNodeDTO> thirdLevelCategoryNodes =buildThirdLevelCategoryNodes(secondLevelCategories);
+            secondLevelCategoryNodeDTO.setCategoryChild(thirdLevelCategoryNodes);
+            secondLevelCategoryNodeDTOS.add(secondLevelCategoryNodeDTO);
+        }
+        return secondLevelCategoryNodeDTOS;
+    }
+
+    private List<ThirdLevelCategoryNodeDTO> buildThirdLevelCategoryNodes(List<CategoryHierarchy> secondLevelCategories) {
+        List<ThirdLevelCategoryNodeDTO> collect = secondLevelCategories.stream().map(categoryHierarchy -> {
+            ThirdLevelCategoryNodeDTO thirdLevelCategoryNodeDTO = new ThirdLevelCategoryNodeDTO();
+            thirdLevelCategoryNodeDTO.setCategoryId(categoryHierarchy.getThirdLevelCategoryId());
+            thirdLevelCategoryNodeDTO.setCategoryName(categoryHierarchy.getThirdLevelCategoryName());
+            return thirdLevelCategoryNodeDTO;
+        }).collect(Collectors.toList());
+        return collect;
     }
 }
