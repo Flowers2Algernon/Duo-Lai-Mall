@@ -1,5 +1,8 @@
 package com.cskaoyan.mall.search.service.impl;
 
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.nacos.shaded.com.google.gson.Gson;
 import com.cskaoyan.mall.product.dto.*;
 import com.cskaoyan.mall.search.client.ProductApiClient;
 import com.cskaoyan.mall.search.converter.GoodsConverter;
@@ -15,12 +18,16 @@ import com.cskaoyan.mall.search.service.SearchService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.index.query.*;
+import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
+import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.nested.Nested;
 import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.ParsedStringTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
@@ -28,15 +35,18 @@ import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.core.AggregationsContainer;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.FetchSourceFilter;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
+import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.json.Json;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -64,7 +74,7 @@ public class SearchServiceImpl implements SearchService {
      */
     @Override
     public void upperGoods(Long skuId) {
-
+        //此方法的本质是通过skiId获取对应的goods，并将该goods存储到ES中--通过maven依赖elastic-search来实现
         Goods goods = new Goods();
 
         // 调用商品服务，获取所需的具体上架商品数据
@@ -90,14 +100,19 @@ public class SearchServiceImpl implements SearchService {
         // 4. 类目信息
         CategoryHierarchyDTO categoryView
                 = productFeignClient.getCategoryView(skuInfo.getThirdLevelCategoryId());
-        // 设置类目信息
+        // 设置一级类目信息
         goods.setFirstLevelCategoryId(categoryView.getFirstLevelCategoryId());
         goods.setFirstLevelCategoryName(categoryView.getFirstLevelCategoryName());
-        // ....
+        // 设置二级类目信息
+        goods.setSecondLevelCategoryId(categoryView.getSecondLevelCategoryId());
+        goods.setSecondLevelCategoryName(categoryView.getSecondLevelCategoryName());
+        //设置三级类名信息
+        goods.setThirdLevelCategoryId(categoryView.getThirdLevelCategoryId());
+        goods.setThirdLevelCategoryName(categoryView.getThirdLevelCategoryName());
 
         // 5. 获取平台属性值信息
         List<PlatformAttributeInfoDTO> attrList = productFeignClient.getAttrList(skuId);
-        attrList.stream().map(platformAttributeInfoDTO -> {
+        List<SearchAttr> searchAttrList = attrList.stream().map(platformAttributeInfoDTO -> {
             SearchAttr searchAttr = new SearchAttr();
 
             //1. 平台属性id
@@ -109,9 +124,10 @@ public class SearchServiceImpl implements SearchService {
             searchAttr.setAttrValue(attrValueList.get(0).getValueName());
             return searchAttr;
         }).collect(Collectors.toList());
+        goods.setAttrs(searchAttrList);
 
 
-        // 保存文档对象
+        // 保存文档对象，将其存储到ES中，方便搜索
         goodsRepository.save(goods);
     }
 
@@ -171,7 +187,7 @@ public class SearchServiceImpl implements SearchService {
         NativeSearchQuery searchQuery = nativeSearchQueryBuilder.build();
         SearchHits<Goods> searchResults = restTemplate.search(searchQuery, Goods.class);
 
-        //解析查询结果 (自己完成)
+        //解析查询结果 ，在其中处理有关goodsList的信息
         SearchResponseDTO responseDTO = parseSearchResult(searchResults);
 
         //设置满足条件的总记录数
@@ -197,18 +213,23 @@ public class SearchServiceImpl implements SearchService {
     private NativeSearchQueryBuilder buildQueryDsl(SearchParam searchParam) {
         // 构建查询器
         NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder();
+        //此处的查询参数如下:
+        //1.类目查询--提供几级类名的Id来进行查询
+        //2.品牌查询--提供一个表示品牌的字符串 trademark.比如trademark=2:华为
+        //3.顶部搜索框关键字查询-- 对应SearchParam中的keyword
+        //4.商品分类页面中点击各种平台属性来进行分类查询--此处提供的是一个string数组--props
 
         // 构建boolQueryBuilder
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-        // 构造关键字查询参数
+        // 构造关键字查询参数->3 solve
         buildKeyQuery(searchParam, boolQueryBuilder);
-        // 构建品牌查询 trademark=2:华为
+        // 构建品牌查询 trademark=2:华为 ->2 solve
         buildTrademarkQuery(searchParam, boolQueryBuilder);
 
-        // 构造类目查询
+        // 构造类目查询 -> 1 solve
         buildCategoryQuery(searchParam, boolQueryBuilder);
 
-        // 构建平台属性查询 23:4G:运行内存(可能有多个查询，这个例子只是一个平台属性或者叫规格参数)
+        // 构建平台属性查询 23:4G:运行内存(可能有多个查询，这个例子只是一个平台属性或者叫规格参数)-> 4 solve
         buildSpecificQuery(searchParam, boolQueryBuilder);
         // 设置整个复合查询
         nativeSearchQueryBuilder.withQuery(boolQueryBuilder);
@@ -225,10 +246,43 @@ public class SearchServiceImpl implements SearchService {
         nativeSearchQueryBuilder.withHighlightBuilder(highlightBuilder);
 
         //  构造品牌聚合
+        // 1.1 构造品牌聚合最外层的 tmId聚合
+        TermsAggregationBuilder tmIdAgg = AggregationBuilders.terms("tmIdAgg").field("tmId");
+
+        // 构造nested中的嵌套聚合的内层聚合
+        //tmId的第一个子聚合
+        TermsAggregationBuilder tmNameAgg = AggregationBuilders.terms("tmNameAgg").field("tmName");
+        //将其设置为tmId的子聚合
+        tmIdAgg.subAggregation(tmNameAgg);
+
+        //tmId的第二个子聚合
+        TermsAggregationBuilder tmLogoUrlAgg = AggregationBuilders.terms("tmLogoUrlAgg").field("tmLogoUrl");
+        tmIdAgg.subAggregation(tmLogoUrlAgg);
+
+        // 将品牌聚合添加到最终的聚合参数中
+        nativeSearchQueryBuilder.withAggregations(tmIdAgg);
 
 
         //  构造平台属性聚合
+        // 2.1 构造最外层的nested类型的聚合
+        NestedAggregationBuilder attrAgg
+                = AggregationBuilders.nested("attrAgg", "attrs");
+        // 2.2 构造nested中的嵌套聚合中的外层聚合  attrIdAgg
+        TermsAggregationBuilder attrIdAgg = AggregationBuilders.terms("attrIdAgg").field("attrs.attrId");
+        // 设置nested的子聚合
+        attrAgg.subAggregation(attrIdAgg);
 
+        // 2.3 attrId聚合的第一个子聚合 attrNameAgg
+        TermsAggregationBuilder attrNameAgg = AggregationBuilders.terms("attrNameAgg").field("attrs.attrName");
+        // 设置attrIdAgg的第一个子聚合
+        attrIdAgg.subAggregation(attrNameAgg);
+
+        // 2.4 attrId聚合的第二个子聚合  attrValueAgg
+        TermsAggregationBuilder attrValueAgg = AggregationBuilders.terms("attrValueAgg").field("attrs.attrValue");
+        // 设置attrIdAgg的第二个子聚合
+        attrIdAgg.subAggregation(attrValueAgg);
+        //将平台属性聚合添加到最终查询结果集中
+        nativeSearchQueryBuilder.withAggregations(attrAgg);
 
         // 设置结果集过滤
         FetchSourceFilter fetchSourceFilter = new FetchSourceFilter(new String[]{"id", "defaultImg", "title", "price"}, null);
@@ -347,8 +401,112 @@ public class SearchServiceImpl implements SearchService {
 
         //声明对象
         SearchResponseDTO searchResponseDTO = new SearchResponseDTO();
+        //解析结果
+        //1. 获取查询到的目标页文档的数据
+        parseDocument(hits,searchResponseDTO);
+        //2. 获取品牌列表
+        AggregationsContainer<?> aggregationsContainer = hits.getAggregations();
+        Aggregations aggregations = (Aggregations) aggregationsContainer.aggregations();
+        //根据聚合名称获取聚合结果
+        Terms tmIdAgg = aggregations.get("tmIdAgg");
+        List<? extends Terms.Bucket> tmIdAggBuckets = tmIdAgg.getBuckets();
+        //设置结果集
+        ArrayList<SearchResponseTmDTO> searchResponseTmDTOS = new ArrayList<>();
+        for (Terms.Bucket tmIdAggBucket : tmIdAggBuckets) {
+            SearchResponseTmDTO searchResponseTmDTO = new SearchResponseTmDTO();
+            long id = tmIdAggBucket.getKeyAsNumber().longValue();
+            searchResponseTmDTO.setTmId(id);
 
+            //拿第一个内层分桶tmName的值
+            Terms tmName = tmIdAggBucket.getAggregations().get("tmName");
+            if (tmName!=null){
+                List<? extends Terms.Bucket> tmNameBuckets = tmName.getBuckets();
+                ArrayList<String> strings = new ArrayList<>();
+                for (Terms.Bucket tmNameBucket : tmNameBuckets) {
+                    //获取内层tmName的值
+                    String tmNameString = tmNameBucket.getKeyAsString();
+                    strings.add(tmNameString);
+                }
+                searchResponseTmDTO.setTmName(strings.get(0));
+            }
+
+            //拿tmIdAgg第二个分桶tmLogoUrl的值
+            Terms tmLogoUrl = tmIdAggBucket.getAggregations().get("tmLogoUrl");
+            if (tmLogoUrl!=null){
+                searchResponseTmDTO.setTmLogoUrl(tmLogoUrl.getBuckets().get(0).getKeyAsString());
+            }
+
+            //放入结果集
+            searchResponseTmDTOS.add(searchResponseTmDTO);
+        }
+        searchResponseDTO.setTrademarkList(searchResponseTmDTOS);
+
+        // 3. 获取平台属性及平台属性值列表
+
+        // 3.1 获取所有的聚合结果
+        AggregationsContainer<?> aggregationsContainer1 = hits.getAggregations();
+        Aggregations aggregations1 = (Aggregations) aggregationsContainer1.aggregations();
+
+        // 3.2 根据聚合名称获取聚合结果, nested聚合的结果
+        Nested nested = aggregations1.get("attrAgg");
+
+        // 3.3 从nested聚合中获取attrIdAgg
+        Terms attrIdAgg = nested.getAggregations().get("attrIdAgg");
+
+        // 3.4 获取外层聚合attrIdAgg的分桶
+        List<? extends Terms.Bucket> attrIdAggBuckets = attrIdAgg.getBuckets();
+
+        List<SearchResponseAttrDTO> searchResponseAttrDTOS = new ArrayList<>();
+
+        // 遍历attrIdAgg的分桶
+        for (Terms.Bucket attrIdBucket :attrIdAggBuckets) {
+            SearchResponseAttrDTO searchResponseAttrDTO = new SearchResponseAttrDTO();
+
+            // 获取attrId分桶的key(平台属性的id)
+            long attrId = attrIdBucket.getKeyAsNumber().longValue();
+            searchResponseAttrDTO.setAttrId(attrId);
+
+            // 从attrId分桶中，获取第一个内层分桶聚合 attrNameAgg的结果
+            Terms attrNameAgg = attrIdBucket.getAggregations().get("attrNameAgg");
+            // 获取内层分桶的key值(平台属性的名称)
+            String attrName = attrNameAgg.getBuckets().get(0).getKeyAsString();
+            searchResponseAttrDTO.setAttrName(attrName);
+
+            // 从attrId分桶中，获取第一个内层分桶聚合 attrValueAgg的结果
+            Terms attrValueAgg = attrIdBucket.getAggregations().get("attrValueAgg");
+            List<? extends Terms.Bucket> attrValueAggBuckets = attrValueAgg.getBuckets();
+
+            List<String> values = new ArrayList<>();
+            for (Terms.Bucket attrValueBucket :attrValueAggBuckets) {
+                // 获取内层attrValueAgg分桶的key值(一个平台属性值)
+                String attrValue = attrValueBucket.getKeyAsString();
+                values.add(attrValue);
+            }
+            searchResponseAttrDTO.setAttrValueList(values);
+
+            // 将表示一个平台属性信息的searchResponseAttrDTO 添加到结果集
+            searchResponseAttrDTOS.add(searchResponseAttrDTO);
+        }
+        // 平台属性信息设置
+        searchResponseDTO.setAttrsList(searchResponseAttrDTOS);
 
         return searchResponseDTO;
+    }
+
+    private void parseDocument(SearchHits<Goods> hits, SearchResponseDTO searchResponseDTO) {
+        List<SearchHit<Goods>> searchHits = hits.getSearchHits();
+        //高亮处理
+        List<GoodsDTO> goodsDTOS = searchHits.stream().map(searchHit -> {
+            //获取文档对象
+            Goods content = searchHit.getContent();
+            //获取高亮字符串
+            List<String> title = searchHit.getHighlightField("title");
+            //替换高亮字符串
+            if (title != null && title.size() != 0) {
+                content.setTitle(title.get(0));
+            }
+            return goodsConverter.goodsPO2DTO(content);
+        }).collect(Collectors.toList());
+        searchResponseDTO.setGoodsList(goodsDTOS);
     }
 }

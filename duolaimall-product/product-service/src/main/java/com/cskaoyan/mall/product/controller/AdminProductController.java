@@ -182,7 +182,7 @@ public class AdminProductController {
     public Result<SkuInfoPageDTO> index(
             @PathVariable Long page,
             @PathVariable Long limit) {
-        Page<SkuInfo> skuInfoPage = new Page<>();
+        Page<SkuInfo> skuInfoPage = new Page<>(page, limit);
         SkuInfoPageDTO skuServicePage = skuService.getPage(skuInfoPage);
         return Result.ok(skuServicePage);
     }
