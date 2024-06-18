@@ -50,6 +50,37 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
 
         //从请求中获取cookie中的token字符串，并根据token字符串的内容获取redis中的登录信息
         String userId = getUserId(request);
+        if ("-1".equals(userId)){
+            //非法登录
+            return out(exchange.getResponse(),ResultCodeEnum.PERMISSION);
+        }
+
+        //判断是否需要登录
+        if (matcher.match(authUrl,path)){
+            //需要登录
+            if (userId.isEmpty()){
+                //实际没有登录
+                return out(exchange.getResponse(),ResultCodeEnum.LOGIN_AUTH);
+            }
+        }
+
+        //只有两种状态，要么不需要登录，要么需要登录并且以及登录了
+        //如果用户登录过了，将userId放入到请求头中
+        ServerHttpRequest.Builder newRequestBuilder = request.mutate();
+        if (!userId.isEmpty()){
+            //登录了，将userId放入自定义请求头中，转发给服务
+            newRequestBuilder.header("userId",userId);
+        }
+
+        //如果前端传了userTempId,获取该用户的id
+        String userTempId = getInfoByName(request, "userTempId");
+        if (userTempId!=null&&!userTempId.isEmpty()){
+            newRequestBuilder.header("userTempId",userTempId);
+        }
+        ServerHttpRequest build = newRequestBuilder.build();
+        //将新的Request对象放入exchange中
+        ServerWebExchange newExchange = exchange.mutate().request(build).build();
+        return chain.filter(newExchange);
     }
 
     public String getUserId(ServerHttpRequest request){
