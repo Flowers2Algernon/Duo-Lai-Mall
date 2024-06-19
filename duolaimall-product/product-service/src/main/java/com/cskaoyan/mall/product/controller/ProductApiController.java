@@ -17,7 +17,7 @@ public class ProductApiController {
     @Autowired
     SkuService skuService;
 
-    @GetMapping("inner/getskuInfo/{skuId}")
+    @GetMapping("inner/getSkuInfo/{skuId}")
     public SkuInfoDTO getSkuInfo(@PathVariable("skuId") long skuId) {
         SkuInfoDTO skuInfo = skuService.getSkuInfo(skuId);
         return skuInfo;
