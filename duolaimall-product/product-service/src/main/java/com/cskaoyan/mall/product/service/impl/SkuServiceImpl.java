@@ -128,12 +128,18 @@ public class SkuServiceImpl implements SkuService {
 
     @Override
     public SkuInfoDTO getSkuInfo(Long skuId) {
-        return null;
+        QueryWrapper<SkuInfo> skuInfoQueryWrapper = new QueryWrapper<>();
+        skuInfoQueryWrapper.eq("id",skuId);
+        SkuInfo skuInfo = skuInfoMapper.selectOne(skuInfoQueryWrapper);
+        return skuInfoConverter.skuInfoPO2DTO(skuInfo);
     }
 
     @Override
     public BigDecimal getSkuPrice(Long skuId) {
-        return null;
+        QueryWrapper<SkuInfo> skuInfoQueryWrapper = new QueryWrapper<>();
+        skuInfoQueryWrapper.eq("id",skuId);
+        SkuInfo skuInfo = skuInfoMapper.selectOne(skuInfoQueryWrapper);
+        return skuInfo.getPrice();
     }
 
     @Override

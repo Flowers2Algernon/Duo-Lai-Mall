@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.*;
 public class ListApiController {
 
     @Autowired
-    SearchService searchService;
+    private SearchService searchService;
+
+
 
     /**
      * 上架商品
@@ -19,7 +21,6 @@ public class ListApiController {
      */
     @GetMapping("inner/upperGoods/{skuId}")
     public Result upperGoods(@PathVariable("skuId") Long skuId) {
-
         searchService.upperGoods(skuId);
         return Result.ok();
     }
@@ -35,8 +36,15 @@ public class ListApiController {
         return Result.ok();
     }
 
-    @GetMapping("api/list/inner/incrHotScore/{skuId}")
+    /**
+     * 更新商品incrHotScore
+     *
+     * @param skuId
+     * @return
+     */
+    @GetMapping("inner/incrHotScore/{skuId}")
     public Result incrHotScore(@PathVariable("skuId") Long skuId) {
+        // 调用服务层
         searchService.incrHotScore(skuId);
         return Result.ok();
     }

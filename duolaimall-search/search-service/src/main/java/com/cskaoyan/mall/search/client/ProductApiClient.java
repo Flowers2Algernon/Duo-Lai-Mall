@@ -8,7 +8,6 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @FeignClient(value = "service-product")
@@ -23,12 +22,10 @@ public interface ProductApiClient {
     @GetMapping("/api/product/inner/getSkuInfo/{skuId}")
     SkuInfoDTO getSkuInfo(@PathVariable("skuId") Long skuId);
 
-    @GetMapping("/api/product/inner/price/{skuId}")
-    BigDecimal getPrice(@PathVariable("skuId") Long skuId);
-
 
     /**
      * 通过三级分类id查询分类信息
+     * @param category3Id
      * @return
      */
     @GetMapping("/api/product/inner/getCategoryView/{thirdLevelCategoryId}")
