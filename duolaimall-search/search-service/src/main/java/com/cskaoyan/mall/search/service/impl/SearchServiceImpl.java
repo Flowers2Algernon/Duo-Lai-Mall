@@ -310,7 +310,8 @@ public class SearchServiceImpl implements SearchService {
 
             if (!orderField.isEmpty()) {
                 // 按照指定的字段
-                Sort sort = Sort.by("asc".equals(split[1]) ? "asc" : "desc", orderField);
+
+                Sort sort = Sort.by("asc".equals(split[1]) ? Sort.Direction.ASC : Sort.Direction.DESC, orderField);
                 nativeSearchQueryBuilder.withSort(sort);
                 return;
             }
