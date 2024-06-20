@@ -52,7 +52,12 @@ public class CartController {
     public Result checkCart(@PathVariable Long skuId,
                             @PathVariable Integer isChecked,
                             HttpServletRequest request){
-
+        String userId = AuthContext.getUserId(request);
+        if (StringUtils.isBlank(userId)){
+            //临时登录的id
+            userId = AuthContext.getUserTempId(request);
+        }
+        cartService.checkCart(userId,isChecked,skuId);
         return Result.ok();
     }
 

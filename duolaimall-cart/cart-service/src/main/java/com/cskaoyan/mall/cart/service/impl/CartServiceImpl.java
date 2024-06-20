@@ -147,7 +147,15 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void checkCart(String userId, Integer isChecked, Long skuId) {
-
+        //所需做的是改变当前选中的商品的id
+        //修改对应user的购物车--中某个skuId商品对应的选中状态，并返回即可
+        //第一步是获取当前用户的购物车，登录与否已经在controller方法中提前规避了
+        String cartKey = getCartKey(userId);
+        //上述cartKey即为对应用户的购物车的key，购物车数据是存储在Redis中的
+        RMap<Long, CartInfoDTO> redissonClientMap = redissonClient.getMap(cartKey);
+        CartInfoDTO goods = redissonClientMap.get(skuId);
+        goods.setIsChecked(isChecked);
+        redissonClientMap.put(skuId,goods);
     }
 
 
