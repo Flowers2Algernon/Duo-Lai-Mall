@@ -22,8 +22,7 @@ public class CartController {
 
     /**
      * @param skuId
-     * @param skuNum
-     * 功能描述: 添加商品到购物车
+     * @param skuNum 功能描述: 添加商品到购物车
      */
     @GetMapping("/cart/add/{skuId}/{skuNum}")
     public Result addToCart(@PathVariable Long skuId, @PathVariable Integer skuNum, HttpServletRequest request) {
@@ -42,8 +41,8 @@ public class CartController {
     }
 
     /**
-     * @param skuId      商品Id
-     * @param isChecked  选中状态，1:选中  0:未选中
+     * @param skuId     商品Id
+     * @param isChecked 选中状态，1:选中  0:未选中
      * @param request
      * @return: com.cskaoyan.mall.common.result.Result
      * 功能描述:
@@ -51,25 +50,30 @@ public class CartController {
     @PutMapping("/cart/check/{skuId}/{isChecked}")
     public Result checkCart(@PathVariable Long skuId,
                             @PathVariable Integer isChecked,
-                            HttpServletRequest request){
+                            HttpServletRequest request) {
         String userId = AuthContext.getUserId(request);
-        if (StringUtils.isBlank(userId)){
+        if (StringUtils.isBlank(userId)) {
             //临时登录的id
             userId = AuthContext.getUserTempId(request);
         }
-        cartService.checkCart(userId,isChecked,skuId);
+        cartService.checkCart(userId, isChecked, skuId);
         return Result.ok();
     }
 
     /**
      * 删除购物车指定的商品
+     *
      * @param skuId
      * @param request
      * @return
      */
     @DeleteMapping("/cart/{skuId}")
     public Result deleteCart(@PathVariable("skuId") Long skuId, HttpServletRequest request) {
-
+        String userId = AuthContext.getUserId(request);
+        if (userId == null) {
+            userId = AuthContext.getUserTempId(request);
+        }
+        cartService.deleteCart(skuId, userId);
 
         return Result.ok();
     }

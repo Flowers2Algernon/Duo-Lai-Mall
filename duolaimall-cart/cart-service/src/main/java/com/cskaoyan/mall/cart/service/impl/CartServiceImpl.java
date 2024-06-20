@@ -168,7 +168,9 @@ public class CartServiceImpl implements CartService {
      */
     @Override
     public void deleteCart(Long skuId, String userId) {
-
+        String cartKey = getCartKey(userId);
+        RMap<Long, CartInfoDTO> redissonClientMap = redissonClient.getMap(cartKey);
+        redissonClientMap.remove(skuId);
     }
 
 
