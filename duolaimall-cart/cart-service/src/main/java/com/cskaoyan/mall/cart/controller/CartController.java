@@ -98,7 +98,11 @@ public class CartController {
 
     @DeleteMapping("/cart/checked")
     public Result deleteChecked(HttpServletRequest request) {
-
+        String userId = AuthContext.getUserId(request);
+        if (userId==null){
+            userId=AuthContext.getUserTempId(request);
+        }
+        cartService.deleteChecked(userId);
         return Result.ok();
     }
 

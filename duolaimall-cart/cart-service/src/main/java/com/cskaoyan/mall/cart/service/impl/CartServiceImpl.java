@@ -181,7 +181,14 @@ public class CartServiceImpl implements CartService {
      */
     @Override
     public void deleteChecked(String userId) {
-
+        //利用userId获取到购物车，遍历其中选中的，remove即可
+        String cartKey = getCartKey(userId);
+        RMap<Long, CartInfoDTO> redissonClientMap = redissonClient.getMap(cartKey);
+        for (Map.Entry<Long, CartInfoDTO> goods : redissonClientMap.entrySet()) {
+            if (goods.getValue().getIsChecked()==1){
+                redissonClientMap.remove(goods.getKey());
+            }
+        }
     }
 
 
