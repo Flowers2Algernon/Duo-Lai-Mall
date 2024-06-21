@@ -1,0 +1,16 @@
+com\cskaoyan\mall\ware\converter\WareOrderTaskConverterImpl.class
+com\cskaoyan\mall\ware\converter\WareOrderTaskConverter.class
+com\cskaoyan\mall\ware\mapper\WareSkuMapper.class
+com\cskaoyan\mall\ware\service\WareService.class
+com\cskaoyan\mall\ware\model\WareInfo.class
+com\cskaoyan\mall\ware\mapper\WareOrderTaskMapper.class
+com\cskaoyan\mall\ware\model\WareOrderTaskDetail.class
+com\cskaoyan\mall\ware\controller\WareApiController.class
+com\cskaoyan\mall\ware\model\WareOrderTask.class
+com\cskaoyan\mall\ware\mapper\WareOrderTaskDetailMapper.class
+com\cskaoyan\mall\ware\config\OpenFeignConfig.class
+com\cskaoyan\mall\ware\service\impl\WareServiceImpl.class
+com\cskaoyan\mall\ware\mapper\WareInfoMapper.class
+com\cskaoyan\mall\ware\ServiceWareApplication.class
+com\cskaoyan\mall\ware\api\OrderApiClient.class
+com\cskaoyan\mall\ware\model\WareSku.class

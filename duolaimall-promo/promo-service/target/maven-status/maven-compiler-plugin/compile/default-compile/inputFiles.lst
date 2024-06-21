@@ -1,0 +1,15 @@
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-promo\promo-service\src\main\java\com\cskaoyan\mall\promo\client\UserApiClient.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-promo\promo-service\src\main\java\com\cskaoyan\mall\promo\service\impl\PromoServiceImpl.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-promo\promo-service\src\main\java\com\cskaoyan\mall\promo\model\UserRecord.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-promo\promo-service\src\main\java\com\cskaoyan\mall\promo\util\LocalCacheHelper.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-promo\promo-service\src\main\java\com\cskaoyan\mall\promo\controller\PromoController.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-promo\promo-service\src\main\java\com\cskaoyan\mall\promo\model\SeckillGoods.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-promo\promo-service\src\main\java\com\cskaoyan\mall\promo\service\PromoService.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-promo\promo-service\src\main\java\com\cskaoyan\mall\promo\constant\SeckillCodeEnum.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-promo\promo-service\src\main\java\com\cskaoyan\mall\promo\client\OrderApiClient.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-promo\promo-service\src\main\java\com\cskaoyan\mall\promo\constant\SeckillGoodsStatus.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-promo\promo-service\src\main\java\com\cskaoyan\mall\promo\task\ScheduledTask.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-promo\promo-service\src\main\java\com\cskaoyan\mall\promo\converter\SeckillGoodsConverter.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-promo\promo-service\src\main\java\com\cskaoyan\mall\promo\mapper\SeckillGoodsMapper.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-promo\promo-service\src\main\java\com\cskaoyan\mall\promo\model\OrderRecord.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-promo\promo-service\src\main\java\com\cskaoyan\mall\promo\ServicePromoApplication.java

@@ -1,0 +1,4 @@
+com\cskaoyan\mall\ware\api\dto\WareOrderTaskDetailDTO.class
+com\cskaoyan\mall\ware\api\constant\TaskStatus.class
+com\cskaoyan\mall\ware\api\dto\WareSkuDTO.class
+com\cskaoyan\mall\ware\api\dto\WareOrderTaskDTO.class

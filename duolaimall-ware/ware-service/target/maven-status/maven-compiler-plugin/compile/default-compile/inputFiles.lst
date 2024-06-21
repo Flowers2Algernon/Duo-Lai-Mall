@@ -1,0 +1,15 @@
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-ware\ware-service\src\main\java\com\cskaoyan\mall\ware\controller\WareApiController.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-ware\ware-service\src\main\java\com\cskaoyan\mall\ware\ServiceWareApplication.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-ware\ware-service\src\main\java\com\cskaoyan\mall\ware\mapper\WareSkuMapper.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-ware\ware-service\src\main\java\com\cskaoyan\mall\ware\config\OpenFeignConfig.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-ware\ware-service\src\main\java\com\cskaoyan\mall\ware\mapper\WareOrderTaskMapper.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-ware\ware-service\src\main\java\com\cskaoyan\mall\ware\model\WareOrderTaskDetail.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-ware\ware-service\src\main\java\com\cskaoyan\mall\ware\service\WareService.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-ware\ware-service\src\main\java\com\cskaoyan\mall\ware\model\WareOrderTask.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-ware\ware-service\src\main\java\com\cskaoyan\mall\ware\api\OrderApiClient.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-ware\ware-service\src\main\java\com\cskaoyan\mall\ware\converter\WareOrderTaskConverter.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-ware\ware-service\src\main\java\com\cskaoyan\mall\ware\mapper\WareInfoMapper.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-ware\ware-service\src\main\java\com\cskaoyan\mall\ware\model\WareSku.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-ware\ware-service\src\main\java\com\cskaoyan\mall\ware\service\impl\WareServiceImpl.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-ware\ware-service\src\main\java\com\cskaoyan\mall\ware\model\WareInfo.java
+D:\wangdao\repo\58th\java-58-course-materials\03-Micoservices\01_code\duolaimall\duolaimall-ware\ware-service\src\main\java\com\cskaoyan\mall\ware\mapper\WareOrderTaskDetailMapper.java

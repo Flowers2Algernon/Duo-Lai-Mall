@@ -1,0 +1,16 @@
+com\cskaoyan\mall\promo\client\OrderApiClient.class
+com\cskaoyan\mall\promo\mapper\SeckillGoodsMapper.class
+com\cskaoyan\mall\promo\model\UserRecord.class
+com\cskaoyan\mall\promo\model\SeckillGoods.class
+com\cskaoyan\mall\promo\util\LocalCacheHelper.class
+com\cskaoyan\mall\promo\service\impl\PromoServiceImpl.class
+com\cskaoyan\mall\promo\model\OrderRecord.class
+com\cskaoyan\mall\promo\client\UserApiClient.class
+com\cskaoyan\mall\promo\controller\PromoController.class
+com\cskaoyan\mall\promo\converter\SeckillGoodsConverter.class
+com\cskaoyan\mall\promo\service\PromoService.class
+com\cskaoyan\mall\promo\converter\SeckillGoodsConverterImpl.class
+com\cskaoyan\mall\promo\ServicePromoApplication.class
+com\cskaoyan\mall\promo\constant\SeckillCodeEnum.class
+com\cskaoyan\mall\promo\constant\SeckillGoodsStatus.class
+com\cskaoyan\mall\promo\task\ScheduledTask.class
