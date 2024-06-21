@@ -107,7 +107,34 @@ public class OrderController {
      */
     @PostMapping("/order/auth/submitOrder")
     public Result<Long> submitOrder(@RequestBody OrderInfoParam orderInfoParam, HttpServletRequest request) {
+        //先从request中获取userId
+        String userId = AuthContext.getUserId(request);
+        //检查库存是否足够
+        //因为可能是一次性提交多个商品
+        for (OrderDetailParam orderDetailParam : orderInfoParam.getOrderDetailList()) {
+            Result hasStock = wareApiClient.hasStock(orderDetailParam.getSkuId(), orderDetailParam.getSkuNum());
+            if (!ResultCodeEnum.SUCCESS.getCode().equals(hasStock.getCode())){
+                //说明库存不足，
+                return Result.fail(0L).message("对不起,"+orderDetailParam.getSkuName()+"库存不足");
+            }
+        }
+        //检查价格，获取数据库中最新的价格
+        //需要调用商品服务
+        for (OrderDetailParam orderDetailParam : orderInfoParam.getOrderDetailList()) {
+            Boolean checkPrice = orderService.checkPrice(orderDetailParam.getSkuId(), orderDetailParam.getOrderPrice());
+            if (checkPrice){
+                //价格不相等，需要重新从数据库获取价格
+                cartApiClient.refreshCartPrice(userId, orderDetailParam.getSkuId());
+                //价格有变动，需要告知客户
+                return Result.fail(0L).message(orderDetailParam.getSkuName() + "价格有变动！");
+            }
+        }
+        orderInfoParam.setUserId(Long.parseLong(userId));
+        //保存订单及订单详情到数据库
+        //需要使用事物
+        Long orderId = orderService.saveOrderInfo(orderInfoConverter.convertOrderInfoParam(orderInfoParam));
 
-        return null;
+        //返回订单id
+        return Result.ok(orderId);
     }
 }

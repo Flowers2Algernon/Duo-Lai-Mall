@@ -215,6 +215,13 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void refreshCartPrice(String userId, Long skuId) {
-
+        //首先获取用户的购物车
+        String cartKey = getCartKey(userId);
+        RMap<String, CartInfoDTO> cartMap = redissonClient.getMap(cartKey);
+        CartInfoDTO cartInfoDTO = cartMap.get(cartKey);
+        //获取商品的实际价格
+        BigDecimal skuPrice = productApiClient.getSkuPrice(skuId);
+        cartInfoDTO.setSkuPrice(skuPrice);
+        cartMap.put(skuId.toString(),cartInfoDTO);
     }
 }

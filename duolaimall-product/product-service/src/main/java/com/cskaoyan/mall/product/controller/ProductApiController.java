@@ -30,4 +30,11 @@ public class ProductApiController {
             return skuPrice;
         }else return BigDecimal.ZERO;
     }
+
+    @GetMapping("/api/product/inner/getSkuPrice/{skuId}")
+    public BigDecimal getSkuPrice(@PathVariable(value = "skuId") Long skuId){
+        //获取商品id并返回
+        BigDecimal skuPrice = skuService.getSkuPrice(skuId);
+        return skuPrice;
+    }
 }
