@@ -7,11 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
-/**
- * 创建日期: 2023/03/16 09:40
- *
- * @author ciggar
- */
+
 @FeignClient(value = "service-user")
 public interface UserApiClient {
 

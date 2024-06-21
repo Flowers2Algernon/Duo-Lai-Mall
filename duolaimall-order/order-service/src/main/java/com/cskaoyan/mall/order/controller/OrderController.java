@@ -21,6 +21,7 @@ import com.cskaoyan.mall.order.query.OrderInfoParam;
 import com.cskaoyan.mall.order.service.OrderService;
 import com.cskaoyan.mall.user.dto.UserAddressDTO;
 import io.netty.handler.codec.mqtt.MqttReasonCodes;
+import org.apache.http.auth.AUTH;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -55,36 +56,33 @@ public class OrderController {
      */
     @GetMapping("/order/auth/trade")
     public Result<OrderTradeDTO> getTradeInfo(HttpServletRequest request){
-        // 获取用户的userId
+        //创建返回对象
+        OrderTradeDTO orderTradeDTO = new OrderTradeDTO();
+        //先获取用户id
         String userId = AuthContext.getUserId(request);
+        //需要实现的有四部分
 
-        // 1. 获取用户的地址列表信息 (自己在用户服务中实现，该服务调用请求的处理)
-        List<UserAddressDTO> addressList = userApiClient.findUserAddressListByUserId(userId);
-
-        // 2. 获取待下单的商品列表
+        //2. 获取用户地址--独立模块
+        List<UserAddressDTO> userAddressListByUserId = userApiClient.findUserAddressListByUserId(userId);
+        orderTradeDTO.setUserAddressList(userAddressListByUserId);
+        //3. 获取商品数量
+        //首先获取购物车中选中的全部的商品列表
         List<CartInfoDTO> cartCheckedList = cartApiClient.getCartCheckedList(userId);
-        // 待下单的购物车商品list ——> 订单明细列表
-        List<OrderDetailDTO> orderDetailDTOS
-                = cartInfoConverter.convertCartInfoDTOToOrderDetailDTOList(cartCheckedList);
-
-
-        // 3. 计算待下单的商品总数量
-        int total = cartCheckedList.stream().mapToInt(cartInfo -> cartInfo.getSkuNum()).sum();
-
-        // 4. 计算总金额
+        List<OrderDetailDTO> orderDetailDTOS = cartInfoConverter.convertCartInfoDTOToOrderDetailDTOList(cartCheckedList);
+        int sum =0;
+        for (CartInfoDTO cartInfoDTO : cartCheckedList) {
+           if (cartInfoDTO!=null && cartInfoDTO.getSkuNum()!=null)
+            sum += cartInfoDTO.getSkuNum();
+        }
+        orderTradeDTO.setTotalNum(sum);
+        //1. 全部的订单价格
+        //可以利用现成的接口来实现--利用orderInfoDTO的getTotalMount来实现
         OrderInfoDTO orderInfoDTO = new OrderInfoDTO();
         orderInfoDTO.setOrderDetailList(orderDetailDTOS);
-        // 利用OrderInfoDTO的sumTotalAmount方法计算订单总金额
-        orderInfoDTO.sumTotalAmount();
-        // 获取到订单总金额
         BigDecimal totalAmount = orderInfoDTO.getTotalAmount();
-
-        // 封装包含详情页数据的OrderTradeDTO对象
-        OrderTradeDTO orderTradeDTO = new OrderTradeDTO();
-        orderTradeDTO.setUserAddressList(addressList);
-        orderTradeDTO.setDetailArrayList(orderDetailDTOS);
-        orderTradeDTO.setTotalNum(total);
         orderTradeDTO.setTotalAmount(totalAmount);
+        //4. 详细的商品信息
+        orderTradeDTO.setDetailArrayList(orderDetailDTOS);
 
         return Result.ok(orderTradeDTO);
     }
@@ -95,16 +93,13 @@ public class OrderController {
     @GetMapping("/order/auth/{page}/{limit}")
     public Result<IPage<OrderInfoDTO>> index(@PathVariable Long page, @PathVariable Long limit, HttpServletRequest request) {
 
-
-        // 1. 获取用户userId
+        //首先获取用户的id
         String userId = AuthContext.getUserId(request);
-
-        // 2. 构造分页参数
-        Page<OrderInfoDTO> pageParam = new Page<>(page, limit);
-
-        IPage<OrderInfoDTO> orderInfoPage = orderService.getPage(pageParam, userId);
-
-        return Result.ok(orderInfoPage);
+        //返回对应page的商品数据
+        //构造page对象
+        Page<OrderInfoDTO> objectPage = new Page<>(page, limit);
+        IPage<OrderInfoDTO> orderServicePage = orderService.getPage(objectPage,userId);
+        return Result.ok(orderServicePage);
     }
 
     /**
@@ -113,36 +108,6 @@ public class OrderController {
     @PostMapping("/order/auth/submitOrder")
     public Result<Long> submitOrder(@RequestBody OrderInfoParam orderInfoParam, HttpServletRequest request) {
 
-        // 1. 获取user_id
-        String userId = AuthContext.getUserId(request);
-        orderInfoParam.setUserId(Long.parseLong(userId));
-
-        // 2. 校验库存
-        List<OrderDetailParam> orderDetailList = orderInfoParam.getOrderDetailList();
-        // 遍历订单商品列表中的每个商品
-        for (OrderDetailParam detailParam :orderDetailList) {
-            Result result = wareApiClient.hasStock(detailParam.getSkuId(), detailParam.getSkuNum());
-            if (!ResultCodeEnum.SUCCESS.getCode().equals(result.getCode())) {
-               // 说明该商品库存不足
-               return Result.fail(0L).message("对不起，" + detailParam.getSkuName() + "库存不足!");
-            }
-        }
-        //3. 校验价格
-        for (OrderDetailParam detailParam :orderDetailList) {
-           // 判断每个商品的价格
-            Boolean isChanged = orderService.checkPrice(detailParam.getSkuId(), detailParam.getOrderPrice());
-            if (isChanged) {
-                // 更新购物车商品价格 (自己去购物车服务中实现该服务调用请求的处理方法)
-                cartApiClient.refreshCartPrice(userId, detailParam.getSkuId());
-                return Result.fail(0L).message("对不起，" + detailParam.getSkuName() + "发生变化，请重新下单!");
-            }
-        }
-
-
-        //4. 开始真正的下单工作
-        OrderInfo orderInfo = orderInfoConverter.convertOrderInfoParam(orderInfoParam);
-        Long orderId = orderService.saveOrderInfo(orderInfo);
-        // 返回订单id
-        return Result.ok(orderId);
+        return null;
     }
 }

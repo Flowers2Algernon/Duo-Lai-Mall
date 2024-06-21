@@ -195,8 +195,17 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public List<CartInfoDTO> getCartCheckedList(String userId) {
-
-        return null;
+        //根据用户id，获取当前用户购物车中所有已选中的商品id
+        String cartKey = getCartKey(userId);
+        RMap<Long, CartInfoDTO> redissonClientMap = redissonClient.getMap(cartKey);
+        List<CartInfoDTO> cartInfoDTOS = new ArrayList<>();
+        for (Map.Entry<Long, CartInfoDTO> goods : redissonClientMap.entrySet()) {
+            if (goods.getValue().getIsChecked()==1){
+                cartInfoDTOS.add(goods.getValue());
+            }
+        }
+        //此时还没有下单，不用删除购物车中选中的商品
+        return cartInfoDTOS;
     }
 
     @Override

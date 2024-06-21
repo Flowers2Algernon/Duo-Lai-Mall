@@ -87,12 +87,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Boolean checkPrice(Long skuId, BigDecimal skuPrice) {
 
-        BigDecimal nowPrice = productApiClient.getSkuPrice(skuId);
-        if (nowPrice.compareTo(skuPrice) != 0) {
-            return true;
-        }
-        // 相等
-        return false;
+        return null;
     }
 
     /**
@@ -110,22 +105,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public Long saveOrderInfo(OrderInfo orderInfo) {
-        // 设置一些订单数据
-        buildOrderInfo(orderInfo);
-
-        // 保存订单信息(order_info，order_detail)
-
-        // 删除购物车中已经下单的商品 (自己实现 购物车服务中处理该服务调用请求的方法)
-        List<Long> skuIds = orderInfo.getOrderDetailList().stream()
-                .map(orderDetail -> orderDetail.getSkuId()).collect(Collectors.toList());
-        cartApiClient.removeCartProductsInOrder(orderInfo.getUserId().toString(), skuIds);
-
-
-        // 发送延迟消息
-        baseProducer.sendDelayMessage(MqTopicConst.DELAY_ORDER_TOPIC, orderInfo.getId(), MqTopicConst.DELAY_ORDER_LEVEL);
-
-        // 返回订单id
-        return orderInfo.getId();
+        return null;
     }
 
     @Transactional
@@ -141,18 +121,7 @@ public class OrderServiceImpl implements OrderService {
      */
     @Override
     public OrderInfoDTO getOrderInfo(Long orderId) {
-        OrderInfo orderInfo = orderInfoMapper.selectById(orderId);
-        if (orderInfo == null) return null;
-        QueryWrapper<OrderDetail> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("order_id", orderId);
-
-        List<OrderDetail> orderDetails = orderDetailMapper.selectList(queryWrapper);
-        orderInfo.setOrderDetailList(orderDetails);
-
-        // 转化
-        OrderInfoDTO orderInfoDTO = orderInfoConverter.convertOrderInfoToOrderInfoDTO(orderInfo);
-
-        return orderInfoDTO;
+        return null;
     }
 
 
@@ -161,41 +130,21 @@ public class OrderServiceImpl implements OrderService {
      */
     @Override
     public IPage<OrderInfoDTO> getPage(Page<OrderInfoDTO> pageParam, String userId) {
-
+        //此处根据page对象和用户id获取对应用户的订单数据--指定页面
         IPage<OrderInfoDTO> orderInfoDTOIPage = orderInfoMapper.selectPageByUserId(pageParam, userId);
-
-        orderInfoDTOIPage.getRecords().forEach(orderInfoDTO -> {
-            // 获取订单状态对应的中文描述字符串，设置orderInfoDTO的orderStatusName
-            orderInfoDTO.setOrderStatusName(OrderStatus.getStatusDescByStatus(orderInfoDTO.getOrderStatus()));
-        });
-
+        //查询结果中需要根据每个订单的Orderstatus来设置相应的中文orderstatusName到具体的返回值中
+        for (OrderInfoDTO record : orderInfoDTOIPage.getRecords()) {
+            record.setOrderStatusName(OrderStatus.getStatusDescByStatus(record.getOrderStatus()));
+        }
+        //设置的中文状态无需保存到数据库中
         return orderInfoDTOIPage;
+
     }
 
 
     private void buildOrderInfo(OrderInfo orderInfo) {
 
-        // 计算总金额
-        orderInfo.sumTotalAmount();
 
-        // 订单状态
-        orderInfo.setOrderStatus(OrderStatus.UNPAID.name());
-
-
-        // 第三方订单编号
-        String outTradeNo = "CSKAOYAN" + System.currentTimeMillis() + new Random().nextInt(1000);
-        // 订单号
-        orderInfo.setOutTradeNo(outTradeNo);
-
-        // 获取订单明细
-        List<OrderDetail> orderDetailList = orderInfo.getOrderDetailList();
-        StringBuffer stringBuffer = new StringBuffer();
-        for (OrderDetail orderDetail : orderDetailList) {
-            String skuName = orderDetail.getSkuName() + "  ";
-            stringBuffer.append(skuName);
-        }
-        String tradeBody = stringBuffer.toString().length() > 100 ? stringBuffer.toString().substring(0, 100) : stringBuffer.toString();
-        orderInfo.setTradeBody(tradeBody);
     }
 
 

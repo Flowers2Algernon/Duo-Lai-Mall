@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
         String newPasswd = DigestUtils.md5DigestAsHex(passwd.getBytes());
         LambdaQueryWrapper<UserInfo> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(UserInfo::getLoginName,userInfo.getLoginName());
-        queryWrapper.eq(UserInfo::getPasswd,userInfo.getPasswd());
+        queryWrapper.eq(UserInfo::getPasswd,newPasswd);
         UserInfo info = userInfoMapper.selectOne(queryWrapper);
         if (info==null){
             //没有查询到
