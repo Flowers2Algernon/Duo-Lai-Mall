@@ -210,7 +210,13 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void delete(String userId, List<Long> skuIds) {
-
+        String cartKey = getCartKey(userId);
+        RMap<Object, Object> redissonClientMap = redissonClient.getMap(cartKey);
+        skuIds.stream().forEach(skuId->{
+            if (redissonClientMap.containsKey(skuId.toString())){
+                redissonClientMap.remove(skuId.toString());
+            }
+        });
     }
 
     @Override

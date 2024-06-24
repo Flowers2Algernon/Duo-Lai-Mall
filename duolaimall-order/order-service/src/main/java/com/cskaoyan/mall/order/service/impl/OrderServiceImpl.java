@@ -127,7 +127,6 @@ public class OrderServiceImpl implements OrderService {
             Long skuId = orderDetail.getSkuId();
             return skuId;
         }).collect(Collectors.toList());
-//         todo 删除订单中的数据controller方法待实现
         cartApiClient.removeCartProductsInOrder(userId.toString(),checkedSkuIdList);
 
         //发送超时订单自动取消
