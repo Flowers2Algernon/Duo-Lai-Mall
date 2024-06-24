@@ -63,9 +63,34 @@ public class PayServiceImpl implements PayService {
      */
     @Override
     public String createAliPay(Long orderId) {
+        //此处需要做如下几件事：
+        //1. 校验支付对应的订单状态是否为未支付，如果是未支付或已关闭，直接返回
+        OrderInfoDTO orderInfoDTO = orderApiClient.getOrderInfoDTO(orderId);
+        String orderStatus = orderInfoDTO.getOrderStatus();
+        if (OrderStatus.CLOSED.name().equals(orderStatus)||OrderStatus.PAID.name().equals(orderStatus)){
+            return "当前订单已完成或已关闭";
+        }
+        //2.保存支付记录到支付表
+        QueryWrapper<PaymentInfo> queryMapper = new QueryWrapper<>();
+        queryMapper.eq("order_id",orderInfoDTO.getId());
+        queryMapper.eq("payment_type",PaymentType.ALIPAY.name());
+        int count = paymentInfoMapper.selectCount(queryMapper).intValue();
+        if (count>0){
+            //已经支付，直接返回
+            return null;
+        }
+        //保存交易记录
+        //此时需要将order转换为pay
+        PaymentInfo paymentInfo = paymentInfoConverter.contvertOrderInfoDTO2PaymentInfo(orderInfoDTO);
+        paymentInfo.setCreateTime(new Date());
+        paymentInfo.setPaymentType(PaymentType.ALIPAY.name());
+        paymentInfo.setPaymentStatus(PaymentStatus.UNPAID.name());
+        paymentInfoMapper.insert(paymentInfo);
+        //3.调用支付宝SDK, 生成支付表单
+        String form = payHelperFactory.getPayHelper(PaymentType.ALIPAY).prePay(orderInfoDTO);
+        //4.返回支付表单
 
-
-        return null;
+        return form;
     }
 
     @Override

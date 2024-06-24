@@ -18,7 +18,6 @@ public interface PayService {
      */
     void savePaymentInfo(OrderInfoDTO orderInfo, String paymentTypeName);
 
-
     /**
      * 通过外部交易流水号和交易渠道 查询支付记录
      */

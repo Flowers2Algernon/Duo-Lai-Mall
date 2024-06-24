@@ -50,4 +50,22 @@ public class PayController {
         log.info("before render template {} for {}", "payment/pay", "payIndex");
         return Result.ok(orderInfoDTO);
     }
+
+    //支付宝支付，获取支付表单
+    @GetMapping("/pay/alipay/submit/{orderId}")
+    @ResponseBody
+    public String submitOrder(@PathVariable long orderId){
+        String form = payService.createAliPay(orderId);
+        return form;
+    }
+
+    //同步回调
+    @GetMapping("/pay/alipay/callback/return")
+    public String callBack(){
+        log.info("支付成功，同步回调");
+        return "redirect:"+alipayConfig.getReturnOrderUrl();
+    }
+
+    //异步回调
+
 }
