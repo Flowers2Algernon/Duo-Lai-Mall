@@ -6,6 +6,7 @@ import com.cskaoyan.mall.common.cache.RedisCache;
 import com.cskaoyan.mall.common.constant.RedisConst;
 import com.cskaoyan.mall.mq.constant.MqTopicConst;
 import com.cskaoyan.mall.mq.producer.BaseProducer;
+import com.cskaoyan.mall.product.converter.dto.PlatformAttributeInfoConverter;
 import com.cskaoyan.mall.product.converter.dto.SkuInfoConverter;
 import com.cskaoyan.mall.product.converter.dto.SpuInfoConverter;
 import com.cskaoyan.mall.product.dto.PlatformAttributeInfoDTO;
@@ -51,6 +52,10 @@ public class SkuServiceImpl implements SkuService {
     SpuSaleAttrInfoMapper spuSaleAttrInfoMapper;
     @Autowired
     SpuInfoConverter spuInfoConverter;
+    @Autowired
+    PlatformAttrInfoMapper platformAttrInfoMapper;
+    @Autowired
+    PlatformAttributeInfoConverter platformAttributeInfoConverter;
 
     @Override
     public void saveSkuInfo(SkuInfoParam skuInfo) {
@@ -217,9 +222,11 @@ public class SkuServiceImpl implements SkuService {
         List<SpuSaleAttributeInfo> spuSaleAttributeInfos = spuSaleAttrInfoMapper.selectSpuSaleAttrListCheckedBySku(skuId, spuId);
         return spuInfoConverter.spuSaleAttributeInfoPOs2DTOs(spuSaleAttributeInfos);
     }
-
+    @RedisCache(prefix = "platformAttributeInfoList:")
     @Override
     public List<PlatformAttributeInfoDTO> getPlatformAttrInfoBySku(Long skuId) {
-        return List.of();
+        List<PlatformAttributeInfo> platformAttributeInfos = platformAttrInfoMapper.selectPlatformAttrInfoListBySkuId(skuId);
+        List<PlatformAttributeInfoDTO> platformAttributeInfoDTOS = platformAttributeInfoConverter.platformAttributeInfoPOs2DTOs(platformAttributeInfos);
+        return platformAttributeInfoDTOS;
     }
 }
