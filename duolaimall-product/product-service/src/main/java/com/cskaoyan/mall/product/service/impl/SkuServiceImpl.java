@@ -2,6 +2,10 @@ package com.cskaoyan.mall.product.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cskaoyan.mall.common.cache.RedisCache;
+import com.cskaoyan.mall.common.constant.RedisConst;
+import com.cskaoyan.mall.mq.constant.MqTopicConst;
+import com.cskaoyan.mall.mq.producer.BaseProducer;
 import com.cskaoyan.mall.product.converter.dto.SkuInfoConverter;
 import com.cskaoyan.mall.product.dto.PlatformAttributeInfoDTO;
 import com.cskaoyan.mall.product.dto.SkuInfoDTO;
@@ -20,11 +24,18 @@ import com.cskaoyan.mall.product.query.SkuInfoParam;
 import com.cskaoyan.mall.product.query.SkuPlatformAttributeValueParam;
 import com.cskaoyan.mall.product.query.SkuSaleAttributeValueParam;
 import com.cskaoyan.mall.product.service.SkuService;
+import org.redisson.api.RBloomFilter;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 @Service
 public class SkuServiceImpl implements SkuService {
     @Autowired
@@ -37,6 +48,10 @@ public class SkuServiceImpl implements SkuService {
     SkuPlatformAttrValueMapper skuPlatformAttrValueMapper;
     @Autowired
     SkuSaleAttrValueMapper skuSaleAttrValueMapper;
+    @Autowired
+    RedissonClient redissonClient;
+    @Autowired
+    BaseProducer producer;
     @Override
     public void saveSkuInfo(SkuInfoParam skuInfo) {
         //需要将传递过来的数据插入到四张表中
@@ -110,11 +125,39 @@ public class SkuServiceImpl implements SkuService {
 
     @Override
     public void onSale(Long skuId) {
-        QueryWrapper<SkuInfo> wrapper = new QueryWrapper<>();
-        wrapper.eq("id",skuId);
-        SkuInfo skuInfo = skuInfoMapper.selectOne(wrapper);
+        //更改销售状态
+        SkuInfo skuInfo = new SkuInfo();
+        skuInfo.setId(skuId);
         skuInfo.setIsSale(1);
         skuInfoMapper.updateById(skuInfo);
+
+        String getSkuInfoKey = getRedisKey(SkuServiceImpl.class,"getSkuInfo",skuId);
+        redissonClient.getBucket(getSkuInfoKey).delete();
+
+        //添加布隆过滤
+        RBloomFilter<Object> bloomFilter = redissonClient.getBloomFilter(RedisConst.SKU_BLOOM_FILTER);
+        bloomFilter.add(skuId);
+
+        //发送消息，在es中添加该商品信息
+        producer.sendMessage(MqTopicConst.PRODUCT_ONSALE_TOPIC,skuId);
+    }
+
+    private String getRedisKey(Class clz, String methodName, Object...args) {
+        Stream<Object> stream = Arrays.asList(args).stream();
+        Stream<? extends Class<?>> classStream = stream.map(obj -> obj.getClass());
+        List<? extends Class<?>> argTypes = classStream.collect(Collectors.toList());
+        Class[] classes = argTypes.toArray(new Class[0]);
+        Method declaredMethod = null;
+        try {
+            declaredMethod=  clz.getDeclaredMethod(methodName, classes);
+
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+        declaredMethod.setAccessible(true);
+        RedisCache annotation = declaredMethod.getAnnotation(RedisCache.class);
+        return annotation.prefix()+Arrays.asList(args);
     }
 
     @Override
