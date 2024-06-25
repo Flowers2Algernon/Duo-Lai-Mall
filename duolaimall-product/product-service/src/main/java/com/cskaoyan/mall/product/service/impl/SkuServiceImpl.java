@@ -162,11 +162,34 @@ public class SkuServiceImpl implements SkuService {
 
     @Override
     public void offSale(Long skuId) {
-        QueryWrapper<SkuInfo> wrapper = new QueryWrapper<>();
-        wrapper.eq("id",skuId);
-        SkuInfo skuInfo = skuInfoMapper.selectOne(wrapper);
+        //更改销售状态
+        SkuInfo skuInfo = skuInfoMapper.selectById(skuId);
         skuInfo.setIsSale(0);
         skuInfoMapper.updateById(skuInfo);
+
+        //删除redis缓存中的数据
+        String skuInfoKey = getRedisKey(SkuServiceImpl.class, "getSkuInfo", skuId);
+        redissonClient.getBucket(skuInfoKey).delete();
+
+        String spuSaleAttrListKey = getRedisKey(SkuServiceImpl.class, "getSpuSaleAttrListCheckBySku",
+                skuId, skuInfo.getSpuId());
+        redissonClient.getBucket(spuSaleAttrListKey).delete();
+
+        String platformAttrListKey = getRedisKey(SkuServiceImpl.class, "getPlatformAttrInfoBySku", skuId);
+        redissonClient.getBucket(platformAttrListKey).delete();
+
+        String skuPosterListKey = getRedisKey(SpuServiceImpl.class, "findSpuPosterBySpuId", skuInfo.getSpuId());
+        redissonClient.getBucket(skuPosterListKey).delete();
+
+        String skuValueIdsMapKey = getRedisKey(SpuServiceImpl.class, "getSkuValueIdsMap", skuInfo.getSpuId());
+        redissonClient.getBucket(skuValueIdsMapKey).delete();
+
+
+        String categoryViewKey = getRedisKey(CategoryServiceImpl.class, "getCategoryViewByCategoryId", skuInfo.getThirdLevelCategoryId());
+        redissonClient.getBucket(categoryViewKey).delete();
+
+        //发送消息，在es中删除该条商品消息
+        producer.sendMessage(MqTopicConst.PRODUCT_OFFSALE_TOPIC,skuId);
     }
 
     @Override
