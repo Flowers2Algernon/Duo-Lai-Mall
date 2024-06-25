@@ -7,18 +7,13 @@ import com.cskaoyan.mall.common.constant.RedisConst;
 import com.cskaoyan.mall.mq.constant.MqTopicConst;
 import com.cskaoyan.mall.mq.producer.BaseProducer;
 import com.cskaoyan.mall.product.converter.dto.SkuInfoConverter;
+import com.cskaoyan.mall.product.converter.dto.SpuInfoConverter;
 import com.cskaoyan.mall.product.dto.PlatformAttributeInfoDTO;
 import com.cskaoyan.mall.product.dto.SkuInfoDTO;
 import com.cskaoyan.mall.product.dto.SkuInfoPageDTO;
 import com.cskaoyan.mall.product.dto.SpuSaleAttributeInfoDTO;
-import com.cskaoyan.mall.product.mapper.SkuImageMapper;
-import com.cskaoyan.mall.product.mapper.SkuInfoMapper;
-import com.cskaoyan.mall.product.mapper.SkuPlatformAttrValueMapper;
-import com.cskaoyan.mall.product.mapper.SkuSaleAttrValueMapper;
-import com.cskaoyan.mall.product.model.SkuImage;
-import com.cskaoyan.mall.product.model.SkuInfo;
-import com.cskaoyan.mall.product.model.SkuPlatformAttributeValue;
-import com.cskaoyan.mall.product.model.SkuSaleAttributeValue;
+import com.cskaoyan.mall.product.mapper.*;
+import com.cskaoyan.mall.product.model.*;
 import com.cskaoyan.mall.product.query.SkuImageParam;
 import com.cskaoyan.mall.product.query.SkuInfoParam;
 import com.cskaoyan.mall.product.query.SkuPlatformAttributeValueParam;
@@ -52,6 +47,11 @@ public class SkuServiceImpl implements SkuService {
     RedissonClient redissonClient;
     @Autowired
     BaseProducer producer;
+    @Autowired
+    SpuSaleAttrInfoMapper spuSaleAttrInfoMapper;
+    @Autowired
+    SpuInfoConverter spuInfoConverter;
+
     @Override
     public void saveSkuInfo(SkuInfoParam skuInfo) {
         //需要将传递过来的数据插入到四张表中
@@ -131,7 +131,7 @@ public class SkuServiceImpl implements SkuService {
         skuInfo.setIsSale(1);
         skuInfoMapper.updateById(skuInfo);
 
-        String getSkuInfoKey = getRedisKey(SkuServiceImpl.class,"getSkuInfo",skuId);
+        String getSkuInfoKey = getRedisKey(SkuServiceImpl.class, "getSkuInfo", skuId);
         redissonClient.getBucket(getSkuInfoKey).delete();
 
         //添加布隆过滤
@@ -139,17 +139,17 @@ public class SkuServiceImpl implements SkuService {
         bloomFilter.add(skuId);
 
         //发送消息，在es中添加该商品信息
-        producer.sendMessage(MqTopicConst.PRODUCT_ONSALE_TOPIC,skuId);
+        producer.sendMessage(MqTopicConst.PRODUCT_ONSALE_TOPIC, skuId);
     }
 
-    private String getRedisKey(Class clz, String methodName, Object...args) {
+    private String getRedisKey(Class clz, String methodName, Object... args) {
         Stream<Object> stream = Arrays.asList(args).stream();
         Stream<? extends Class<?>> classStream = stream.map(obj -> obj.getClass());
         List<? extends Class<?>> argTypes = classStream.collect(Collectors.toList());
         Class[] classes = argTypes.toArray(new Class[0]);
         Method declaredMethod = null;
         try {
-            declaredMethod=  clz.getDeclaredMethod(methodName, classes);
+            declaredMethod = clz.getDeclaredMethod(methodName, classes);
 
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
@@ -157,7 +157,7 @@ public class SkuServiceImpl implements SkuService {
         }
         declaredMethod.setAccessible(true);
         RedisCache annotation = declaredMethod.getAnnotation(RedisCache.class);
-        return annotation.prefix()+Arrays.asList(args);
+        return annotation.prefix() + Arrays.asList(args);
     }
 
     @Override
@@ -189,13 +189,13 @@ public class SkuServiceImpl implements SkuService {
         redissonClient.getBucket(categoryViewKey).delete();
 
         //发送消息，在es中删除该条商品消息
-        producer.sendMessage(MqTopicConst.PRODUCT_OFFSALE_TOPIC,skuId);
+        producer.sendMessage(MqTopicConst.PRODUCT_OFFSALE_TOPIC, skuId);
     }
 
     @Override
     public SkuInfoDTO getSkuInfo(Long skuId) {
         QueryWrapper<SkuInfo> skuInfoQueryWrapper = new QueryWrapper<>();
-        skuInfoQueryWrapper.eq("id",skuId);
+        skuInfoQueryWrapper.eq("id", skuId);
         SkuInfo skuInfo = skuInfoMapper.selectOne(skuInfoQueryWrapper);
         return skuInfoConverter.skuInfoPO2DTO(skuInfo);
     }
@@ -203,17 +203,19 @@ public class SkuServiceImpl implements SkuService {
     @Override
     public BigDecimal getSkuPrice(Long skuId) {
         QueryWrapper<SkuInfo> skuInfoQueryWrapper = new QueryWrapper<>();
-        skuInfoQueryWrapper.eq("id",skuId);
+        skuInfoQueryWrapper.eq("id", skuId);
         SkuInfo skuInfo = skuInfoMapper.selectOne(skuInfoQueryWrapper);
-        if (null!=skuInfo.getPrice()){
+        if (null != skuInfo.getPrice()) {
             return skuInfo.getPrice();
         }
         return new BigDecimal("0");
     }
 
+    @RedisCache(prefix = "spuSaleAttrListCheckBySku:")
     @Override
     public List<SpuSaleAttributeInfoDTO> getSpuSaleAttrListCheckBySku(Long skuId, Long spuId) {
-        return List.of();
+        List<SpuSaleAttributeInfo> spuSaleAttributeInfos = spuSaleAttrInfoMapper.selectSpuSaleAttrListCheckedBySku(skuId, spuId);
+        return spuInfoConverter.spuSaleAttributeInfoPOs2DTOs(spuSaleAttributeInfos);
     }
 
     @Override
