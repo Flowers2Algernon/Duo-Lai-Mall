@@ -8,8 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+/**
+ * Created by 北海 on 2023-05-19 14:47
+ */
 @RestController
 @Slf4j
 public class IndexController {
@@ -17,10 +21,10 @@ public class IndexController {
     @Autowired
     CategoryService categoryService;
 
-    @GetMapping({"/", "index"})
-    public Result<List<FirstLevelCategoryNodeDTO>> getBaseCategoryList(){
-        log.info("enter {} for {}",IndexController.class.getSimpleName(),"index");
-        //获取首页分类数据
+    @GetMapping({"/","index"})
+    public Result<List<FirstLevelCategoryNodeDTO>> index(){
+        log.info("enter {} for {}", IndexController.class.getSimpleName(), "index");
+        // 获取首页分类数据
         List<FirstLevelCategoryNodeDTO> categoryTreeList = categoryService.getCategoryTreeList();
         return Result.ok(categoryTreeList);
     }

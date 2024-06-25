@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.cskaoyan.mall.common.model.BaseEntity;
 import lombok.Data;
-import lombok.ToString;
 
 /**
  * <p>
@@ -13,7 +12,6 @@ import lombok.ToString;
  *
  */
 @Data
-@ToString(callSuper = true)
 @TableName("platform_attr_value")
 public class PlatformAttributeValue extends BaseEntity {
 

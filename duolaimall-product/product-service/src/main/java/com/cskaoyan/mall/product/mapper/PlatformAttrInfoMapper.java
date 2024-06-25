@@ -16,6 +16,6 @@ public interface PlatformAttrInfoMapper extends BaseMapper<PlatformAttributeInfo
     List<PlatformAttributeInfo> selectPlatFormAttrInfoList(@Param("firstLevelCategoryId") Long firstLevelCategoryId
             , @Param("secondLevelCategoryId") Long secondLevelCategoryId, @Param("thirdLevelCategoryId") Long thirdLevelCategoryId);
 
-    List<PlatformAttributeInfo> selectPlatformAttrInfoListBySkuId(@Param("skuId") Long skuId);
+    List<PlatformAttributeInfo> selectPlatformAttrInfoListBySkuId(Long skuId);
 
 }

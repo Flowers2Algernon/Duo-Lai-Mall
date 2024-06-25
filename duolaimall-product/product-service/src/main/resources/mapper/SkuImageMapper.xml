@@ -3,7 +3,7 @@
 <mapper namespace="com.cskaoyan.mall.product.mapper.SkuImageMapper">
 
 
-    <resultMap id="skuImage" type="com.cskaoyan.mall.product.model.SkuImage">
+    <resultMap id="skuImage" type="com.cskaoyan.mall.product.model.SkuImage" autoMapping="true">
     </resultMap>
 
     <!-- 根据spuId 获取到销售属性值Id 与skuId 组成的数据集 -->

@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.cskaoyan.mall.common.model.BaseEntity;
 import lombok.Data;
-import lombok.ToString;
 
 import java.util.List;
 
@@ -15,7 +14,6 @@ import java.util.List;
  *
  */
 @Data
-@ToString(callSuper = true)
 @TableName("platform_attr_info")
 public class PlatformAttributeInfo extends BaseEntity {
 

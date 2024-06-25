@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-06-17T14:49:29+0800",
+    date = "2024-06-25T22:28:58+0800",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 17.0.9 (Oracle Corporation)"
 )
 @Component
@@ -29,7 +29,7 @@ public class PlatformAttributeInfoConverterImpl implements PlatformAttributeInfo
         platformAttributeInfoDTO.setAttrName( platformAttributeInfo.getAttrName() );
         platformAttributeInfoDTO.setCategoryId( platformAttributeInfo.getCategoryId() );
         platformAttributeInfoDTO.setCategoryLevel( platformAttributeInfo.getCategoryLevel() );
-        platformAttributeInfoDTO.setAttrValueList( platformAttributeValuePO2DTOs( platformAttributeInfo.getAttrValueList() ) );
+        platformAttributeInfoDTO.setAttrValueList( platformAttributeValueListToPlatformAttributeValueDTOList( platformAttributeInfo.getAttrValueList() ) );
 
         return platformAttributeInfoDTO;
     }
@@ -63,17 +63,16 @@ public class PlatformAttributeInfoConverterImpl implements PlatformAttributeInfo
         return platformAttributeValueDTO;
     }
 
-    @Override
-    public List<PlatformAttributeValueDTO> platformAttributeValuePO2DTOs(List<PlatformAttributeValue> platformAttributeValues) {
-        if ( platformAttributeValues == null ) {
+    protected List<PlatformAttributeValueDTO> platformAttributeValueListToPlatformAttributeValueDTOList(List<PlatformAttributeValue> list) {
+        if ( list == null ) {
             return null;
         }
 
-        List<PlatformAttributeValueDTO> list = new ArrayList<PlatformAttributeValueDTO>( platformAttributeValues.size() );
-        for ( PlatformAttributeValue platformAttributeValue : platformAttributeValues ) {
-            list.add( platformAttributeValuePO2DTO( platformAttributeValue ) );
+        List<PlatformAttributeValueDTO> list1 = new ArrayList<PlatformAttributeValueDTO>( list.size() );
+        for ( PlatformAttributeValue platformAttributeValue : list ) {
+            list1.add( platformAttributeValuePO2DTO( platformAttributeValue ) );
         }
 
-        return list;
+        return list1;
     }
 }

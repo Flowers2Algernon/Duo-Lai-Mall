@@ -1,7 +1,6 @@
 package com.cskaoyan.mall.product.service;
 
 import com.cskaoyan.mall.product.dto.PlatformAttributeInfoDTO;
-import com.cskaoyan.mall.product.dto.PlatformAttributeValueDTO;
 import com.cskaoyan.mall.product.query.PlatformAttributeParam;
 
 import java.util.List;
@@ -22,6 +21,6 @@ public interface PlatformAttributeService {
 
     void savePlatformAttrInfo(PlatformAttributeParam platformAttributeParam);
 
-    List<PlatformAttributeValueDTO> getPlatformAttrInfo(Long attrId);
+    PlatformAttributeInfoDTO getPlatformAttrInfo(Long attrId);
 
 }

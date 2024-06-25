@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-06-17T14:49:29+0800",
+    date = "2024-06-25T22:28:58+0800",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 17.0.9 (Oracle Corporation)"
 )
 @Component
@@ -41,20 +41,6 @@ public class SpuInfoConverterImpl implements SpuInfoConverter {
         spuInfoDTO.setSpuPosterList( spuPosterPOs2DTOs( spuInfo.getSpuPosterList() ) );
 
         return spuInfoDTO;
-    }
-
-    @Override
-    public List<SpuInfoDTO> spuInfoPO2DTOs(List<SpuInfo> spuInfos) {
-        if ( spuInfos == null ) {
-            return null;
-        }
-
-        List<SpuInfoDTO> list = new ArrayList<SpuInfoDTO>( spuInfos.size() );
-        for ( SpuInfo spuInfo : spuInfos ) {
-            list.add( spuInfoPO2DTO( spuInfo ) );
-        }
-
-        return list;
     }
 
     @Override

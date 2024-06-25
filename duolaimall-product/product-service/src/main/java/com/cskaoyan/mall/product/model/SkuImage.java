@@ -22,12 +22,11 @@ public class SkuImage extends BaseEntity {
 	private Long skuId;
 
 	// "图片名称"
-	//todo 此处修改了imgName和imgUrl的exist=false
-	@TableField("img_name")
+	@TableField(exist = false)
 	private String imgName;
 
 	// "图片路径"
-	@TableField("img_url")
+	@TableField(exist = false)
 	private String imgUrl;
 
 	//"商品图片id"

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @FeignClient("service-search")
 public interface SearchApiClient {
+
     /**
      * 更新商品incrHotScore
      * @param skuId
@@ -14,10 +15,4 @@ public interface SearchApiClient {
      */
     @GetMapping("/api/list/inner/incrHotScore/{skuId}")
     Result incrHotScore(@PathVariable("skuId") Long skuId);
-
-    @GetMapping("/api/list/inner/upperGoods/{skuId}")
-    public Result upperGoods(@PathVariable("skuId") Long skuId);
-
-    @GetMapping("/api/list/inner/lowerGoods/{skuId}")
-    public Result lowerGoods(@PathVariable("skuId") Long skuId);
 }

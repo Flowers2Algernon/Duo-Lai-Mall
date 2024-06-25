@@ -13,6 +13,9 @@ public class FirstLevelCategoryNodeDTO {
    // "一级目录的名称"
     String categoryName;
 
+    // "一级目录的位序"
+    Integer index;
+
     // "一级目录所包含的二级目录"
     List<SecondLevelCategoryNodeDTO> categoryChild;
 

@@ -1,6 +1,7 @@
 package com.cskaoyan.mall.product.constant;
 
 import com.cskaoyan.mall.common.constant.CodeEnum;
+import lombok.Data;
 import lombok.Getter;
 
 @Getter
@@ -12,6 +13,7 @@ public enum ProductCodeEnum implements CodeEnum {
         this.code = code;
         this.message = message;
     }
+
 
     private Integer code;
 

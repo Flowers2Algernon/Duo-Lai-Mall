@@ -1,134 +1,172 @@
 package com.cskaoyan.mall.product.service.impl;
 
+import com.alibaba.nacos.client.naming.utils.CollectionUtils;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cskaoyan.mall.common.cache.RedisCache;
 import com.cskaoyan.mall.product.converter.dto.SpuInfoConverter;
+import com.cskaoyan.mall.product.converter.dto.SpuInfoPageConverter;
+import com.cskaoyan.mall.product.converter.param.SpuInfoParamConverter;
 import com.cskaoyan.mall.product.dto.*;
 import com.cskaoyan.mall.product.mapper.*;
 import com.cskaoyan.mall.product.model.*;
-import com.cskaoyan.mall.product.query.*;
+import com.cskaoyan.mall.product.query.SpuInfoParam;
 import com.cskaoyan.mall.product.service.SpuService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 @Service
 public class SpuServiceImpl implements SpuService {
+
     @Autowired
     SpuInfoMapper spuInfoMapper;
-    @Autowired
-    SpuInfoConverter spuInfoConverter;
+
     @Autowired
     SpuImageMapper spuImageMapper;
-    @Autowired
-    SpuPosterMapper spuPosterMapper;
+
     @Autowired
     SpuSaleAttrInfoMapper spuSaleAttrInfoMapper;
+
     @Autowired
     SpuSaleAttrValueMapper spuSaleAttrValueMapper;
+
+    @Autowired
+    SkuSaleAttrValueMapper skuSaleAttrValueMapper;
+
+    @Autowired
+    SpuPosterMapper spuPosterMapper;
+
+    @Autowired
+    SpuInfoConverter spuInfoConverter;
+
+    @Autowired
+    SpuInfoPageConverter spuInfoPageConverter;
+
+    @Autowired
+    SpuInfoParamConverter spuInfoParamConverter;
+
+
     @Override
     public SpuInfoPageDTO getSpuInfoPage(Page<SpuInfo> pageParam, Long category3Id) {
-        //获取某一个三级分类下的spuInfo
-        QueryWrapper<SpuInfo> spuInfoQueryWrapper = new QueryWrapper<>();
-        spuInfoQueryWrapper.eq("third_level_category_id",category3Id);
+        // 获取指定类目下对应的spu
+        LambdaQueryWrapper<SpuInfo> spuInfoQueryWrapper = new LambdaQueryWrapper<>();
+        spuInfoQueryWrapper.eq(SpuInfo::getThirdLevelCategoryId, category3Id);
+        spuInfoQueryWrapper.orderByDesc(SpuInfo::getId);
         Page<SpuInfo> spuInfoPage = spuInfoMapper.selectPage(pageParam, spuInfoQueryWrapper);
-        long total = spuInfoPage.getTotal();
-        List<SpuInfo> records = spuInfoPage.getRecords();
-        SpuInfoPageDTO spuInfoPageDTO = new SpuInfoPageDTO();
-        spuInfoPageDTO.setTotal((int) total);
-        //转换成所需要的DTO类型
-        List<SpuInfoDTO> spuInfoDTOS = spuInfoConverter.spuInfoPO2DTOs(records);
-        spuInfoPageDTO.setRecords(spuInfoDTOS);
-        return spuInfoPageDTO;
+
+        return spuInfoPageConverter.spuInfoPage2PageDTO(spuInfoPage);
+
     }
 
     @Override
-    public void saveSpuInfo(SpuInfoParam spuInfo) {
-        SpuInfo spuInfoSaveToDatabase = new SpuInfo();
-        spuInfoSaveToDatabase.setSpuName(spuInfo.getSpuName());
-        spuInfoSaveToDatabase.setDescription(spuInfo.getDescription());
-        spuInfoSaveToDatabase.setThirdLevelCategoryId(spuInfo.getCategory3Id());
-        spuInfoSaveToDatabase.setTmId(spuInfo.getTmId());
-        //spuInfo表能插入的到此为止
-        spuInfoMapper.insert(spuInfoSaveToDatabase);
-        //此时insert进去之后就有了id--mybatis封装了处理细节，直接拿来用就行
-        Long spuInfoId = spuInfoSaveToDatabase.getId();//todo 观察是否有值
-        //接下来处理spuImageList
-        List<SpuImageParam> spuImageList = spuInfo.getSpuImageList();
-        for (SpuImageParam spuImageParam : spuImageList) {
-            SpuImage spuImage = new SpuImage();
-            spuImage.setSpuId(spuInfoId);
-            spuImage.setImgName(spuImageParam.getImgName());
-            spuImage.setImgUrl(spuImageParam.getImgUrl());
-            spuImageMapper.insert(spuImage);
-        }
-        //接下来处理spuPostList
-        List<SpuPosterParam> spuPosterList = spuInfo.getSpuPosterList();
-        for (SpuPosterParam spuPosterParam : spuPosterList) {
-            SpuPoster spuPoster = new SpuPoster();
-            spuPoster.setSpuId(spuInfoId);
-            spuPoster.setImgUrl(spuPosterParam.getImgUrl());
-            spuPoster.setImgName(spuPosterParam.getImgName());
-            spuPosterMapper.insert(spuPoster);
-        }
-        //接下来处理spuSaleAttrList
-        List<SpuSaleAttributeInfoParam> spuSaleAttrList = spuInfo.getSpuSaleAttrList();
-        for (SpuSaleAttributeInfoParam spuSaleAttributeInfoParam : spuSaleAttrList) {
-            SpuSaleAttributeInfo spuSaleAttributeInfo = new SpuSaleAttributeInfo();
-            spuSaleAttributeInfo.setSpuId(spuInfoId);
-            spuSaleAttributeInfo.setSaleAttrId(spuSaleAttributeInfoParam.getBaseSaleAttrId());
-            spuSaleAttributeInfo.setSaleAttrName(spuSaleAttributeInfoParam.getSaleAttrName());
-            //至此spu_sale_attr_info能插入的数据结束
-            //插入上述对象到数据库中
-            spuSaleAttrInfoMapper.insert(spuSaleAttributeInfo);
-            Long saleAttributeInfoId = spuSaleAttributeInfo.getId();
-            //接下来处理spu-sale-attr-value
-            List<SpuSaleAttributeValueParam> spuSaleAttrValueList = spuSaleAttributeInfoParam.getSpuSaleAttrValueList();
-            for (SpuSaleAttributeValueParam spuSaleAttributeValueParam : spuSaleAttrValueList) {
-                SpuSaleAttributeValue spuSaleAttributeValue = new SpuSaleAttributeValue();
-                spuSaleAttributeValue.setSpuId(spuInfoId);
-                spuSaleAttributeValue.setSpuSaleAttrId(saleAttributeInfoId);
-                spuSaleAttributeValue.setSpuSaleAttrValueName(spuSaleAttributeValueParam.getSaleAttrValueName());
-                //插入到数据库中
-                spuSaleAttrValueMapper.insert(spuSaleAttributeValue);
+    @Transactional(rollbackFor = Exception.class)
+    public void saveSpuInfo(SpuInfoParam spuInfoParam) {
+         /*
+            spuInfo;
+            spuImage;
+            spuSaleAttr;
+            spuSaleAttrValue;
+            spuPoster
+     */
+        SpuInfo spuInfo = spuInfoParamConverter.spuInfoParam2Info(spuInfoParam);
+        spuInfoMapper.insert(spuInfo);
+
+        //  获取到spuImage 集合数据
+        List<SpuImage> spuImageList = spuInfo.getSpuImageList();
+        //  判断不为空
+        if (!CollectionUtils.isEmpty(spuImageList)) {
+            //  循环遍历
+            for (SpuImage spuImage : spuImageList) {
+                //  需要将spuId 赋值
+                spuImage.setSpuId(spuInfo.getId());
+                //  保存spuImge
+                spuImageMapper.insert(spuImage);
             }
         }
+        //  获取销售属性集合
+        List<SpuSaleAttributeInfo> spuSaleAttributeInfoList = spuInfo.getSpuSaleAttributeInfoList();
+        //  判断
+        if (!CollectionUtils.isEmpty(spuSaleAttributeInfoList)) {
+            //  循环遍历
+            for (SpuSaleAttributeInfo spuSaleAttrInfo : spuSaleAttributeInfoList) {
+                //  需要将spuId 赋值
+                spuSaleAttrInfo.setSpuId(spuInfo.getId());
+                spuSaleAttrInfoMapper.insert(spuSaleAttrInfo);
+
+                //  再此获取销售属性值集合
+                List<SpuSaleAttributeValue> spuSaleAttributeValueList = spuSaleAttrInfo.getSpuSaleAttrValueList();
+                //  判断
+                if (!CollectionUtils.isEmpty(spuSaleAttributeValueList)) {
+                    //  循环遍历
+                    for (SpuSaleAttributeValue spuSaleAttrValue : spuSaleAttributeValueList) {
+                        //   需要将spuId， spu_sale_attr_id 赋值
+                        spuSaleAttrValue.setSpuId(spuInfo.getId());
+                        spuSaleAttrValue.setSpuSaleAttrId(spuSaleAttrInfo.getId());
+                        spuSaleAttrValueMapper.insert(spuSaleAttrValue);
+                    }
+                }
+            }
+        }
+
+        //  获取到posterList 集合数据
+        List<SpuPoster> spuPosterList = spuInfo.getSpuPosterList();
+        //  判断不为空
+        if (!CollectionUtils.isEmpty(spuPosterList)) {
+            for (SpuPoster spuPoster : spuPosterList) {
+                //  需要将spuId 赋值
+                spuPoster.setSpuId(spuInfo.getId());
+                //  保存spuPoster
+                spuPosterMapper.insert(spuPoster);
+            }
+        }
+
     }
 
     @Override
     public List<SpuImageDTO> getSpuImageList(Long spuId) {
-        QueryWrapper<SpuImage> wrapper = new QueryWrapper<>();
-        wrapper.eq("spu_id",spuId);
-        List<SpuImage> spuImages = spuImageMapper.selectList(wrapper);
-        List<SpuImageDTO> spuImageDTOS = spuInfoConverter.spuImagePOs2DTOs(spuImages);
-        return spuImageDTOS;
+        // 根据spu 查询所有spu所属的图片
+        LambdaQueryWrapper<SpuImage> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SpuImage::getSpuId, spuId);
+        List<SpuImage> spuImages = spuImageMapper.selectList(queryWrapper);
+        return spuInfoConverter.spuImagePOs2DTOs(spuImages);
     }
 
     @Override
     public List<SpuSaleAttributeInfoDTO> getSpuSaleAttrList(Long spuId) {
-        //两张表查询
-        //spu_sale_attr_info和spu_sale_attr_value
-        QueryWrapper<SpuSaleAttributeInfo> infoQueryWrapper = new QueryWrapper<>();
-        infoQueryWrapper.eq("spu_id",spuId);
-        List<SpuSaleAttributeInfo> spuSaleAttributeInfos = spuSaleAttrInfoMapper.selectList(infoQueryWrapper);
-        for (SpuSaleAttributeInfo spuSaleAttributeInfo : spuSaleAttributeInfos) {
-            QueryWrapper<SpuSaleAttributeValue> valueQueryWrapper = new QueryWrapper<>();
-            valueQueryWrapper.eq("spu_id",spuId).eq("spu_sale_attr_id",spuSaleAttributeInfo.getId());
-            List<SpuSaleAttributeValue> spuSaleAttributeValues = spuSaleAttrValueMapper.selectList(valueQueryWrapper);
-            spuSaleAttributeInfo.setSpuSaleAttrValueList(spuSaleAttributeValues);
-        }
-        List<SpuSaleAttributeInfoDTO> spuSaleAttributeInfoDTOS = spuInfoConverter.spuSaleAttributeInfoPOs2DTOs(spuSaleAttributeInfos);
-        return spuSaleAttributeInfoDTOS;
+        List<SpuSaleAttributeInfo> spuSaleAttributeInfos = spuSaleAttrInfoMapper.selectSpuSaleAttrList(spuId);
+        return spuInfoConverter.spuSaleAttributeInfoPOs2DTOs(spuSaleAttributeInfos);
     }
 
     @Override
+    @RedisCache(prefix = "SpuPosterList:")
     public List<SpuPosterDTO> findSpuPosterBySpuId(Long spuId) {
-        return List.of();
+        QueryWrapper<SpuPoster> spuInfoQueryWrapper = new QueryWrapper<>();
+        spuInfoQueryWrapper.eq("spu_id",spuId);
+        List<SpuPoster> spuPosterList = spuPosterMapper.selectList(spuInfoQueryWrapper);
+
+        return spuInfoConverter.spuPosterPOs2DTOs(spuPosterList);
     }
 
     @Override
+    @RedisCache(prefix = "skuValueIdsMap:")
     public Map<String, Long> getSkuValueIdsMap(Long spuId) {
-        return Map.of();
+        // key = 125|123 ,value = 37
+        List<SkuSaleAttributeValuePermutation> permutationList = skuSaleAttrValueMapper.selectSaleAttrValuesBySpu(spuId);
+        HashMap<String, Long> valueIdsMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(permutationList)) {
+            permutationList.forEach(singlePermutation -> {
+                valueIdsMap.put(singlePermutation.getSkuSaleAttrValuePermutation()
+                        , singlePermutation.getSkuId());
+            });
+        }
+
+        return valueIdsMap;
     }
 }
