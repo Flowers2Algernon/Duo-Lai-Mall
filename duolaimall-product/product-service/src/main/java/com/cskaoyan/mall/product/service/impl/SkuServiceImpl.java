@@ -1,5 +1,6 @@
 package com.cskaoyan.mall.product.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cskaoyan.mall.common.cache.RedisCache;
@@ -196,12 +197,20 @@ public class SkuServiceImpl implements SkuService {
         //发送消息，在es中删除该条商品消息
         producer.sendMessage(MqTopicConst.PRODUCT_OFFSALE_TOPIC, skuId);
     }
-
+    @RedisCache(prefix = RedisConst.SKUKEY_PREFIX)
     @Override
     public SkuInfoDTO getSkuInfo(Long skuId) {
-        QueryWrapper<SkuInfo> skuInfoQueryWrapper = new QueryWrapper<>();
-        skuInfoQueryWrapper.eq("id", skuId);
-        SkuInfo skuInfo = skuInfoMapper.selectOne(skuInfoQueryWrapper);
+        LambdaQueryWrapper<SkuInfo> skuInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        skuInfoLambdaQueryWrapper.eq(SkuInfo::getIsSale,1)
+                .eq(SkuInfo::getId,skuId);
+        List<SkuInfo> skuInfos = skuInfoMapper.selectList(skuInfoLambdaQueryWrapper);
+        if (skuInfos==null||skuInfos.isEmpty()){
+            return new SkuInfoDTO();
+        }
+        SkuInfo skuInfo = skuInfos.get(0);
+        //根据skuId，查询图片列表集合
+        List<SkuImage> skuImages = skuImageMapper.getSkuImages(skuId);
+        skuInfo.setSkuImageList(skuImages);
         return skuInfoConverter.skuInfoPO2DTO(skuInfo);
     }
 
