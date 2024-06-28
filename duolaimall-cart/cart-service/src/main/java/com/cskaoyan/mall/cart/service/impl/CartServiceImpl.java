@@ -38,29 +38,21 @@ public class CartServiceImpl implements CartService {
         //购物车中数据是依靠hash表来存储的
         String hashGoodsTableSingleUser = RedisConst.USER_KEY_PREFIX + userId + RedisConst.USER_CART_KEY_SUFFIX;
         //从redis中获取购物车的hash表
-        RMap<Long, CartInfoDTO> goodsMapForSingleUser = redissonClient.getMap(hashGoodsTableSingleUser);
-        if (goodsMapForSingleUser.get(skuId)==null){
-            //redis中不存在该用户选择的该商品数据
-            CartInfoDTO cartInfoDTO = new CartInfoDTO();
-            cartInfoDTO.setUserId(userId);
-            Date now = new Date();
-            cartInfoDTO.setCreateTime(now);
-            cartInfoDTO.setUpdateTime(now);
-            cartInfoDTO.setSkuId(skuId);
-            //剩下的属性需要调用商品服务来获取
-            SkuInfoDTO skuInfo = productApiClient.getSkuInfo(skuId);
-            cartInfoDTO.setImgUrl(skuInfo.getSkuDefaultImg());
+        RMap<String, CartInfoDTO> cartInfoDTORMap = redissonClient.getMap(hashGoodsTableSingleUser);
+        CartInfoDTO cartInfoDTO = null;
+        if (cartInfoDTORMap.containsKey(skuId.toString())) {
+            cartInfoDTO = cartInfoDTORMap.get(skuId.toString());
+            //此处的数量是每次加减的数量
+            cartInfoDTO.setSkuNum(cartInfoDTO.getSkuNum()+skuNum);
             cartInfoDTO.setIsChecked(1);
-            cartInfoDTO.setSkuPrice(skuInfo.getPrice());
-            cartInfoDTO.setSkuName(skuInfo.getSkuName());
-            goodsMapForSingleUser.fastPut(skuId,cartInfoDTO);
+            cartInfoDTO.setSkuPrice(productApiClient.getSkuPrice(skuId));
+            cartInfoDTO.setUpdateTime(new Date());
         }else {
-            //将当前商品数量加1
-            CartInfoDTO cartInfoDTO = goodsMapForSingleUser.get(skuId);
-            cartInfoDTO.setSkuNum(cartInfoDTO.getSkuNum()+1);
-            goodsMapForSingleUser.fastPut(skuId,cartInfoDTO);
+            //给cartInfo赋值
+            SkuInfoDTO skuInfo = productApiClient.getSkuInfo(skuId);
+            cartInfoDTO = skuInfoConverter.skuInfoToCartInfo(skuInfo, skuNum, skuId, userId);
         }
-
+        cartInfoDTORMap.put(skuId.toString(),cartInfoDTO);
     }
 
     private String getCartKey(String userId) {

@@ -70,16 +70,17 @@ public class OrderController {
         List<CartInfoDTO> cartCheckedList = cartApiClient.getCartCheckedList(userId);
         List<OrderDetailDTO> orderDetailDTOS = cartInfoConverter.convertCartInfoDTOToOrderDetailDTOList(cartCheckedList);
         int sum =0;
+        BigDecimal totalAmount = BigDecimal.ZERO;
         for (CartInfoDTO cartInfoDTO : cartCheckedList) {
-           if (cartInfoDTO!=null && cartInfoDTO.getSkuNum()!=null)
-            sum += cartInfoDTO.getSkuNum();
+           if (cartInfoDTO!=null && cartInfoDTO.getSkuNum()!=null&&cartInfoDTO.getSkuPrice()!=null){
+               sum += cartInfoDTO.getSkuNum();
+               totalAmount.add((cartInfoDTO.getSkuPrice()).multiply(BigDecimal.valueOf(cartInfoDTO.getSkuNum())));
+           }
         }
         orderTradeDTO.setTotalNum(sum);
         //1. 全部的订单价格
         //可以利用现成的接口来实现--利用orderInfoDTO的getTotalMount来实现
-        OrderInfoDTO orderInfoDTO = new OrderInfoDTO();
-        orderInfoDTO.setOrderDetailList(orderDetailDTOS);
-        BigDecimal totalAmount = orderInfoDTO.getTotalAmount();
+
         orderTradeDTO.setTotalAmount(totalAmount);
         //4. 详细的商品信息
         orderTradeDTO.setDetailArrayList(orderDetailDTOS);
