@@ -22,3 +22,4 @@ cd6fab6f72ef   elasticsearch:7.8.0              "/tini -- /usr/local…"   11 da
 
 ```
 
+Before use multithread
