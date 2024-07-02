@@ -53,6 +53,73 @@ docker run -d -p 8081:80 -v /tmp/text:/usrs/share/nginx/html nginx
 
 ![005](assets/iamges/005.png)
 
+## Redisson
+
+To use Redisson, we first need to import the dependency, and then we can start using Redisson.
+
+```xml
+    <dependencies>
+        <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson</artifactId>
+                <version>3.11.1</version>
+        </dependency>
+    </dependencies>
+```
+
+Example: before accessing Redis with Redisson, we need to construct a RedissonClient object.
+
+```java
+        // 1. Create a new config object
+        Config config = new Config();
+        // 2. Configure the Config object
+        SingleServerConfig serverConfig = config.useSingleServer()
+                // Set the address to access Redis here
+                .setAddress("redis://localhost:6379");
+
+        // Set the serialization method, using Jackson for serialization and deserialization
+        config.setCodec(new JsonJacksonCodec());
+
+        // 3. Create a Redis client. This object will initiate a connection request to the Redis server when created
+        RedissonClient redissonClient = Redisson.create(config);
+```
+
+It's important to note that when created, the RedissonClient object will initiate a connection request to the Redis Server. So if the connection to the Redis Server fails, the RedissonClient object will also fail to create!
+
+After creating the RedissonClient object, we can access the five basic data types in Redis.
+
+# Spring Cloud
+
+## Monolithic applications
+
+In the early stages of monolithic applications, when applications were relatively small, the benefits of monolithic architecture included:
+
+- Simple application development.
+- It is easy to make large-scale changes to the application.
+- Testing is relatively straightforward.
+- Deployment is clear and simple.
+- Horizontal scaling is effortless.
+
+![006](assets/iamges/006.png)
+
+However, as time passes and the monolithic application includes more and more functions, with the application's `size` growing larger, the drawbacks of monolithic applications gradually become apparent:
+
+- Code becomes excessively complex and severely coupled, making it difficult ot maintain.
+- The cycle from code submission to actual deployment is very long.
+- Slow development and slow startup seriously affect development efficiency.
+- Difficult to deliver reliable monolithic applications.
+
+## Microservice architecture
+
+What is microservice architecture? It's an architecture style that decomposes application functionality into a set of services.
+
+Modularity is the foundation for developing large, complex applications. When a monolithic application becomes too large, it's difficult to develop as a whole and hard for one person to understand fully. Large applications need to be broken down into modules to enable different people to develop and understand(different parts).
+
+- In monolithic architecture, modules are typically defined by a set of structures provided by the programming language (for example, packages in Java or jar files). However, with modules obtained this way, code from different modules can still reference each other, leading to chaotic object dependencies between modules.
+- Microservice architecture uses microservices as the unit of modularity. To access a service, you can only use the API provided by the service externally.  Thus, the service's API builds an insurmountable boundary for itself, and you cannot bypass the API to access the internal classes of the service. Using microservice architecture can solve the pain points of large monolithic applications.
+
+![007](assets/iamges/007.png)
+
 
 
 
