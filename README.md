@@ -19,7 +19,25 @@ This combination of technologies enables the system to handle high concurrency, 
 
 ![003](assets/iamges/003.png)
 
-#### CompletableFuture
+# Preparation Work
+
+## Port Mapping
+
+Containers inherently possess isolation characteristics, so different containers have independent network systems. As a result, two different containers can fully utilise the same ports internally and can use ports already in use on the host machine. These identical port numbers are unrelated and cannot communicate with each other over the network.
+
+If you want to provide services externally through containers, you need to establish a mapping between the container's ports and the host machine's ports.
+
+Port mapping can be achieved using the -p option with docker run;
+
+```bash
+#Map the host machine's port 8080 to the container's port 80
+#-p: Specify port mapping, format: host port:container port
+docker run -d -p 8080:80 nginx
+```
+
+![004](assets/iamges/004.png)
+
+
 
 The following containers will start
 
@@ -36,6 +54,10 @@ cd6fab6f72ef   elasticsearch:7.8.0              "/tini -- /usr/local…"   11 da
 1ca103e80a2f   mysql                            "docker-entrypoint.s…"   2 weeks ago   Up About a minute   0.0.0.0:3306->3306/tcp, :::3306->3306/tcp, 33060/tcp                                                     mysql
 
 ```
+
+
+
+CompletableFuture
 
 ![001](assets/iamges/001.png)
 
