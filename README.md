@@ -37,6 +37,24 @@ docker run -d -p 8080:80 nginx
 
 ![004](assets/iamges/004.png)
 
+## File Mapping
+
+Containers inherently possess isolation characteristics, so different containers have independent file systems. Any modifications made inside a container will not affect the host machine or other containers. If a container is deleted, all data within it ceases to exit.
+
+Therefore, if you want to access the data from a container even after it has been deleted(for example, data in a database), you need to map a specific directory inside the container to the host machine's file system.
+
+This allows the data to be saved on the host machine, so that even if the container is deleted, we can still access the container's previous data on the host machine.
+
+Data persistence can be achieved using the -v option with docker run;
+
+```bash
+docker run -d -p 8081:80 -v /tmp/text:/usrs/share/nginx/html nginx
+```
+
+![005](assets/iamges/005.png)
+
+
+
 
 
 The following containers will start
