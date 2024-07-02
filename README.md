@@ -120,7 +120,9 @@ Modularity is the foundation for developing large, complex applications. When a 
 
 ![007](assets/iamges/007.png)
 
+## Use Spring Cloud in this project
 
+![008](assets/iamges/008.png)
 
 
 
