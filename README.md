@@ -1,6 +1,6 @@
 # duo-lai-mall
 
-This is a modern shopping website I undergoing in duolaimall. 
+This is a modern shopping website I was undergoing in duolaimall. 
 
 
 
@@ -23,3 +23,5 @@ cd6fab6f72ef   elasticsearch:7.8.0              "/tini -- /usr/local…"   11 da
 ```
 
 Before use multithread
+
+![001](https://raw.githubusercontent.com/Flowers2Algernon/duo-lai-mall/main/assets/images/001.png)
