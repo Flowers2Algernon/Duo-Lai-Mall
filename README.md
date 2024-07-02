@@ -53,6 +53,24 @@ docker run -d -p 8081:80 -v /tmp/text:/usrs/share/nginx/html nginx
 
 ![005](assets/iamges/005.png)
 
+## Docker containers
+
+The following containers will start
+
+```
+$ docker ps
+CONTAINER ID   IMAGE     COMMAND         CREATED        STATUS       PORTS         NAMES
+7ba1e06bcc72   rocketmqinc/rocketmq             "sh mqbroker -c /opt…"   4 days ago    Up About a minute   0.0.0.0:10909->10909/tcp, :::10909->10909/tcp, 9876/tcp, 0.0.0.0:10911->10911/tcp, :::10911->10911/tcp   rmqbroker
+bf5324e09975   rocketmqinc/rocketmq             "sh mqnamesrv"           4 days ago    Up About a minute   10909/tcp, 0.0.0.0:9876->9876/tcp, :::9876->9876/tcp, 10911/tcp                                          rmqnamesrv
+1b5b43941a37   kibana:7.8.0                     "/usr/local/bin/dumb…"   11 days ago   Up About a minute   0.0.0.0:5601->5601/tcp, :::5601->5601/tcp                                                                kibana
+cd6fab6f72ef   elasticsearch:7.8.0              "/tini -- /usr/local…"   11 days ago   Up About a minute   0.0.0.0:9200->9200/tcp, :::9200->9200/tcp, 0.0.0.0:9300->9300/tcp, :::9300->9300/tcp                     elasticsearch
+5954b873d79a   minio/minio                      "/usr/bin/docker-ent…"   2 weeks ago   Up About a minute   0.0.0.0:9000-9001->9000-9001/tcp, :::9000-9001->9000-9001/tcp                                            minio
+48b909b35ccd   nacos/nacos-server:v2.2.0-slim   "bin/docker-startup.…"   2 weeks ago   Up About a minute   0.0.0.0:8848->8848/tcp, :::8848->8848/tcp, 0.0.0.0:9848->9848/tcp, :::9848->9848/tcp                     nacos
+29035242989a   redis:6.2                        "docker-entrypoint.s…"   2 weeks ago   Up About a minute   0.0.0.0:6379->6379/tcp, :::6379->6379/tcp                                                                redis-server
+1ca103e80a2f   mysql                            "docker-entrypoint.s…"   2 weeks ago   Up About a minute   0.0.0.0:3306->3306/tcp, :::3306->3306/tcp, 33060/tcp                                                     mysql
+
+```
+
 ## Redisson
 
 To use Redisson, we first need to import the dependency, and then we can start using Redisson.
@@ -171,23 +189,52 @@ Actual management:
 
 # Gateway
 
+In this project, the API gateway is a server that serves as the sole entry point to the system.
+The core principle of the API gateway approach is that all clients and consumers access microservices through a unified gateway, where all non-business functions are handled at the gateway layer. Typically, the gateway provides REST/HTTP access APIs.
 
+![014](assets/iamges/014.png)
 
-The following containers will start
+## Spring Cloud Gateway
 
+Spring Cloud Gateway is an API gateway based on the Spring ecosystem, implemented using the WebFlux framework. It aims to achieve request routing in a simple and efficient manner, as well as some other edge functions, such as security and monitoring.
+
+- **Predicate**: Represents the matching conditions for routing rules
+
+- **Filter**: A filter that implements interception and processing of requests before (Pre) request processing, and interception and processing of responses after (Post) request processing
+- **Route**: Defines the mapping between requests and routing targets. It consists of a unique ID (custom), a target address URI, a set of Predicates representing routing conditions, and a set of Filters. For a request, if it satisfies all the routing conditions (Predicates) of a route, then the request will be forwarded to the target address URI according to that route's (Route) rules."
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      # Define multiple routes
+      routes:
+      # ID of a route
+      - id: test_route
+        # Target URI for this route
+        uri: https://example.org
+        # Set of routing conditions
+        # /red/aaa
+        predicates:
+        - Path=/red/**
+        # Set of filters
+        filters:
+        - AddRequestParameter=color, red
 ```
-$ docker ps
-CONTAINER ID   IMAGE     COMMAND         CREATED        STATUS       PORTS         NAMES
-7ba1e06bcc72   rocketmqinc/rocketmq             "sh mqbroker -c /opt…"   4 days ago    Up About a minute   0.0.0.0:10909->10909/tcp, :::10909->10909/tcp, 9876/tcp, 0.0.0.0:10911->10911/tcp, :::10911->10911/tcp   rmqbroker
-bf5324e09975   rocketmqinc/rocketmq             "sh mqnamesrv"           4 days ago    Up About a minute   10909/tcp, 0.0.0.0:9876->9876/tcp, :::9876->9876/tcp, 10911/tcp                                          rmqnamesrv
-1b5b43941a37   kibana:7.8.0                     "/usr/local/bin/dumb…"   11 days ago   Up About a minute   0.0.0.0:5601->5601/tcp, :::5601->5601/tcp                                                                kibana
-cd6fab6f72ef   elasticsearch:7.8.0              "/tini -- /usr/local…"   11 days ago   Up About a minute   0.0.0.0:9200->9200/tcp, :::9200->9200/tcp, 0.0.0.0:9300->9300/tcp, :::9300->9300/tcp                     elasticsearch
-5954b873d79a   minio/minio                      "/usr/bin/docker-ent…"   2 weeks ago   Up About a minute   0.0.0.0:9000-9001->9000-9001/tcp, :::9000-9001->9000-9001/tcp                                            minio
-48b909b35ccd   nacos/nacos-server:v2.2.0-slim   "bin/docker-startup.…"   2 weeks ago   Up About a minute   0.0.0.0:8848->8848/tcp, :::8848->8848/tcp, 0.0.0.0:9848->9848/tcp, :::9848->9848/tcp                     nacos
-29035242989a   redis:6.2                        "docker-entrypoint.s…"   2 weeks ago   Up About a minute   0.0.0.0:6379->6379/tcp, :::6379->6379/tcp                                                                redis-server
-1ca103e80a2f   mysql                            "docker-entrypoint.s…"   2 weeks ago   Up About a minute   0.0.0.0:3306->3306/tcp, :::3306->3306/tcp, 33060/tcp                                                     mysql
 
-```
+In this project, how does the gateway work:
+
+<img src="assets/iamges/013.png" alt="013" style="zoom:80%;" />
+
+- The client sends a request to the Gateway.
+
+- The Handler Mapping component of the Gateway performs route matching for the request. The request is handed over to the Web Handler for processing if it matches a certain routing rule.
+- Before forwarding the request to the target, the Web Handler passes the request to a series of filters that meet the request filtering conditions, i.e., a filter chain processes the request.
+- A dotted line separates the filter chain because filters can intercept requests both before forwarding and after request processing to handle the response.
+
+
+
+
 
 
 
