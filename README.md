@@ -22,6 +22,9 @@ cd6fab6f72ef   elasticsearch:7.8.0              "/tini -- /usr/local…"   11 da
 
 ```
 
+![001](assets/iamges/001.png)
+
 Before use multithread
 
-![001](https://raw.githubusercontent.com/Flowers2Algernon/duo-lai-mall/main/assets/images/001.png)
+![002](assets/iamges/002.png)
+
