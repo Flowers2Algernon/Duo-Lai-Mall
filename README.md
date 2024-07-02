@@ -1,10 +1,10 @@
-# duo-lai-mall
+# DuoLaiMall - A Java backend online shopping mall project 
 
 [![MIT][License-Image]][License-Url] [![CICD](https://github.com/alwitt/livemix/actions/workflows/cicd.yaml/badge.svg?branch=main)](https://github.com/alwitt/livemix/actions/workflows/cicd.yaml)
 
 [License-Url]: https://mit-license.org/
 [License-Image]: https://img.shields.io/badge/License-MIT-blue.svg
-DuolaiMall is a Java backend online shopping mall project based on microservice architecture. The main technology stack includes Spring Cloud, Redis, Elasticsearch, RocketMQ, and others. This e-commerce system utilizes a distributed architecture to provide a scalable and efficient platform for online retail operations. 
+`DuolaiMall` is a Java backend online shopping mall project based on microservice architecture. The main technology stack includes Spring Cloud, Redis, Elasticsearch, RocketMQ, and others. This e-commerce system utilises a distributed architecture to provide a scalable and efficient platform for online retail operations. 
 
 The project leverages Spring Cloud for building and managing microservices, Redis for caching and session management, Elasticsearch for powerful search capabilities, and RocketMQ for message queuing and asynchronous communication between services. This combination of technologies enables the system to handle high concurrency, provide fast and accurate search results, and maintain data consistency across various components of the e-commerce platform.
 
