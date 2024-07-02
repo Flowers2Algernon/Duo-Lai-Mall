@@ -232,6 +232,33 @@ In this project, how does the gateway work:
 - Before forwarding the request to the target, the Web Handler passes the request to a series of filters that meet the request filtering conditions, i.e., a filter chain processes the request.
 - A dotted line separates the filter chain because filters can intercept requests both before forwarding and after request processing to handle the response.
 
+## Cross-origin problem
+
+To solve the cross-origin problem, we can add a custom Filter in the gateway that adds HTTP CORS response headers to all returned requests, thus resolving the cross-origin issue.
+
+```java
+@Configuration
+public class CorsConfig {
+    @Bean
+    public CorsWebFilter corsWebFilter(){
+
+        // CORS configuration object
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.addAllowedOrigin("*"); // Set allowed access networks
+        configuration.setAllowCredentials(true); // Set whether to get cookies from the server
+        configuration.addAllowedMethod("*"); // Set request methods, * means any
+        configuration.addAllowedHeader("*"); // All request header information, * means any
+
+        // Configure source object
+        UrlBasedCorsConfigurationSource configurationSource = new UrlBasedCorsConfigurationSource();
+        // Apply this CORS configuration to all requests
+        configurationSource.registerCorsConfiguration("/**", configuration);
+        // CORS filter object
+        return new CorsWebFilter(configurationSource);
+    }
+}
+```
+
 
 
 
