@@ -19,6 +19,33 @@ This combination of technologies enables the system to handle high concurrency, 
 
 ![003](assets/iamges/003.png)
 
+## Code Structure
+
+- Duolaimall is the parent project for all other Maven projects, containing no code and centrally managing the versions of third-party open-source frameworks used in our project.
+- Duolaimall-common
+
+The parent project of the common project, managing dependencies for the following common projects
+
+```xml
+<modules>
+    <module>common-util</module>
+    <module>common-service</module>
+    <module>common-mq</module>
+</modules>
+```
+
+- duolaimall-gateway: Based on Spring Cloud Gateway
+- duolaimall-product, duolaimall-order, duolaimall-user, duolaimall-xxx:
+  - Each represents a service
+  - xxx-api: Public request and response entity classes exposed by the service
+  - xxx-service: The actual service implementation code
+  - xxx-service always depends on xxx-api
+- common-service
+  - Manages some dependencies that xxx-service services might use
+- common-mq: Common message module
+
+
+
 # Preparation Work
 
 ## Port Mapping
