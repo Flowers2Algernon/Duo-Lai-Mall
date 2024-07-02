@@ -124,6 +124,53 @@ Modularity is the foundation for developing large, complex applications. When a 
 
 ![008](assets/iamges/008.png)
 
+# Nacos
+
+## Service manage
+
+If the service consumer doesn't specify the service provider's address when it's defined, how does the service consumer know where to call the service provider? 
+
+At this point, we need to introduce a new role - the service registry center, which uniformly manages the status and information of services, thus solving this problem.
+
+For each service:
+
+- When the service starts, it will register its own information to the service registry center, including IP address, port number, and other information. This achieves service registration.
+- During the service operation, it will constantly "report" its status to the service registry center so that the service registry center can perceive the operating status of the service in real time.
+- At the same time, when the service starts, it will also pull information about other services from the registry center, that is, download the service registry information locally. This way, a service can know other services' calling addresses and other information.
+- During the service operation, the service will constantly pull the latest service registry information from the registry center, thus achieving real-time service discovery.
+
+In this project, we mainly use Nacos to manage service.
+
+Nacos primarily adopts a Client-Server(C-S) architecture for implementation:
+
+![010](assets/iamges/010.png)
+
+- NacosServer implements the functionality of a registry center and can run independently.
+- NacosDiscoveryClient is responsible for helping service instances access NacosServer, implementing service registration and automatic discovery.
+
+![009](assets/iamges/009.png)
+
+## Configuration manage
+
+Imagine if each service had its own configuration, such as the database address it accesses. But one day, the server address where the database is deployed changes. What would happen then? To ensure services can correctly access the database, we would have to stop each service, modify the configuration file of each service, and then restart each service. Two problems would arise in this process:
+
+- Modifying configuration files is tedious and time-consuming, especially when there are numerous services.
+- To make the new configuration effective, services need to be restarted.
+
+To solve the above problems, we need to introduce a new role in our microservice architecture project - the configuration center. Similar to the registry center, there are multiple implementations of the configuration center, and Nacos also implements the role of a configuration center.
+
+Nacos provides multiple dimensions to help us distinguish different configurations. Their relationship is shown in the following diagram:
+
+![012](assets/iamges/012.png)
+
+Actual management:
+
+![011](assets/iamges/011.png)
+
+
+
+# Gateway
+
 
 
 The following containers will start
