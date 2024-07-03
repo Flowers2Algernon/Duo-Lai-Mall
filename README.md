@@ -21,8 +21,8 @@ This combination of technologies enables the system to handle high concurrency, 
 
 ## Code Structure
 
-- Duolaimall is the parent project for all other Maven projects, containing no code and centrally managing the versions of third-party open-source frameworks used in our project.
-- Duolaimall-common
+- duolaimall is the parent project for all other Maven projects, containing no code and centrally managing the versions of third-party open-source frameworks used in our project.
+- duolaimall-common
 
 The parent project of the common project, managing dependencies for the following common projects
 
@@ -86,7 +86,7 @@ The following containers will start
 
 ```
 $ docker ps
-CONTAINER ID   IMAGE     COMMAND         CREATED        STATUS       PORTS         NAMES
+CONTAINER ID          IMAGE                            COMMAND            CREATED        STATUS                PORTS                NAMES
 7ba1e06bcc72   rocketmqinc/rocketmq             "sh mqbroker -c /opt…"   4 days ago    Up About a minute   0.0.0.0:10909->10909/tcp, :::10909->10909/tcp, 9876/tcp, 0.0.0.0:10911->10911/tcp, :::10911->10911/tcp   rmqbroker
 bf5324e09975   rocketmqinc/rocketmq             "sh mqnamesrv"           4 days ago    Up About a minute   10909/tcp, 0.0.0.0:9876->9876/tcp, :::9876->9876/tcp, 10911/tcp                                          rmqnamesrv
 1b5b43941a37   kibana:7.8.0                     "/usr/local/bin/dumb…"   11 days ago   Up About a minute   0.0.0.0:5601->5601/tcp, :::5601->5601/tcp                                                                kibana
